@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://free-match.local/schemas/envelope.json",
+  "title": "FreeMatchEnvelope",
+  "description": "All free-match messages share this envelope. Transport-agnostic.",
+  "type": "object",
+  "required": ["v", "id", "type", "ts", "from", "body"],
+  "additionalProperties": false,
+  "properties": {
+    "v": {
+      "type": "integer",
+      "const": 1,
+      "description": "Protocol version"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 8,
+      "description": "Globally unique message id (ULID/UUID recommended)"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "identity.announce",
+        "want",
+        "have",
+        "bid",
+        "accept",
+        "reject",
+        "deal",
+        "fulfill",
+        "confirm",
+        "review",
+        "courier.offer",
+        "courier.accept",
+        "ping",
+        "board.list"
+      ]
+    },
+    "ts": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC creation time"
+    },
+    "from": {
+      "$ref": "#/$defs/actor_ref"
+    },
+    "to": {
+      "description": "Optional direct recipient; omit for board/public broadcast",
+      "oneOf": [
+        { "$ref": "#/$defs/actor_ref" },
+        { "type": "null" }
+      ]
+    },
+    "thread": {
+      "type": ["string", "null"],
+      "description": "Root message id for a negotiation thread"
+    },
+    "reply_to": {
+      "type": ["string", "null"],
+      "description": "Immediate parent message id"
+    },
+    "ttl_sec": {
+      "type": ["integer", "null"],
+      "minimum": 1,
+      "description": "Optional soft expiry for offers/wants"
+    },
+    "body": {
+      "type": "object",
+      "description": "Type-specific payload"
+    },
+    "sig": {
+      "type": ["string", "null"],
+      "description": "Optional base64 signature over canonical body+envelope fields"
+    }
+  },
+  "$defs": {
+    "actor_ref": {
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Stable actor id (pubkey hash, did, or local handle)"
+        },
+        "display": {
+          "type": ["string", "null"],
+          "description": "Human label, not authoritative"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["buyer", "seller", "courier", "agent"]
+          },
+          "uniqueItems": true
+        },
+        "endpoints": {
+          "type": "array",
+          "description": "How to reach this actor (not gated by free-match)",
+          "items": {
+            "type": "object",
+            "required": ["kind", "addr"],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": ["board", "file", "http", "nostr", "email", "xmpp", "matrix", "telegram", "other"]
+              },
+              "addr": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

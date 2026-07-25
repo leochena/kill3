@@ -1,0 +1,18 @@
+{
+  "v": 1,
+  "id": "01demo_review_monitor01",
+  "type": "review",
+  "ts": "2026-07-25T06:05:00Z",
+  "from": {
+    "id": "demo_buyer_ada",
+    "roles": ["buyer"]
+  },
+  "body": {
+    "subject_id": "demo_seller_bob",
+    "deal_id": "01demo_deal_monitor01",
+    "stars": 5,
+    "text": "货对板，准时面交",
+    "tags": ["punctual", "as_described"]
+  },
+  "sig": null
+}

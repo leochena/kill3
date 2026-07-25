@@ -1,0 +1,3 @@
+# identities contain keys — never commit
+*
+!.gitignore

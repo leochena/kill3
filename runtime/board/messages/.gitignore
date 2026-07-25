@@ -1,0 +1,3 @@
+# free-match local board (gitignored payloads OK to keep empty)
+*
+!.gitignore

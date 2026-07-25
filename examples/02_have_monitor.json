@@ -1,0 +1,25 @@
+{
+  "v": 1,
+  "id": "01demo_have_monitor01",
+  "type": "have",
+  "ts": "2026-07-25T02:10:00Z",
+  "from": {
+    "id": "demo_seller_bob",
+    "display": "Bob",
+    "roles": ["seller"]
+  },
+  "ttl_sec": 604800,
+  "body": {
+    "item": {
+      "title": "戴尔 24寸 IPS 显示器",
+      "description": "轻微使用痕迹，功能正常，附 HDMI 线",
+      "condition": "used",
+      "tags": ["monitor", "dell", "ips"]
+    },
+    "price": { "amount": "480", "currency": "CNY" },
+    "where": { "region": "上海-浦东" },
+    "stock": 1,
+    "notes": "周末方便面交"
+  },
+  "sig": null
+}

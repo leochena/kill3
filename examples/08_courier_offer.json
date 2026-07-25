@@ -1,0 +1,19 @@
+{
+  "v": 1,
+  "id": "01demo_courier_offer01",
+  "type": "courier.offer",
+  "ts": "2026-07-25T03:00:00Z",
+  "from": {
+    "id": "demo_courier_cy",
+    "display": "Cy",
+    "roles": ["courier"]
+  },
+  "body": {
+    "target_id": "01demo_deal_monitor01",
+    "fee": { "amount": "25", "currency": "CNY" },
+    "eta": "2h",
+    "vehicle": "电动车",
+    "message": "浦东 10km 内可取送"
+  },
+  "sig": null
+}

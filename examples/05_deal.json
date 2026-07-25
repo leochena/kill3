@@ -1,0 +1,39 @@
+{
+  "v": 1,
+  "id": "01demo_deal_monitor01",
+  "type": "deal",
+  "ts": "2026-07-25T02:26:00Z",
+  "from": {
+    "id": "demo_seller_bob",
+    "display": "Bob",
+    "roles": ["seller"]
+  },
+  "thread": "01demo_have_monitor01",
+  "body": {
+    "parties": {
+      "buyer": "demo_buyer_ada",
+      "seller": "demo_seller_bob",
+      "courier": null
+    },
+    "item": {
+      "title": "戴尔 24寸 IPS 显示器",
+      "condition": "used",
+      "qty": 1
+    },
+    "price": { "amount": "450", "currency": "CNY" },
+    "payment": {
+      "methods": ["cash", "wechat"],
+      "timing": "on_delivery"
+    },
+    "delivery": {
+      "mode": "meetup"
+    },
+    "based_on": [
+      "01demo_have_monitor01",
+      "01demo_bid_monitor01",
+      "01demo_accept_monitor01"
+    ],
+    "terms": "周六 13:00 面交，先验货再付款"
+  },
+  "sig": null
+}

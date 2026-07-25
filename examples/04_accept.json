@@ -1,0 +1,18 @@
+{
+  "v": 1,
+  "id": "01demo_accept_monitor01",
+  "type": "accept",
+  "ts": "2026-07-25T02:25:00Z",
+  "from": {
+    "id": "demo_seller_bob",
+    "display": "Bob",
+    "roles": ["seller"]
+  },
+  "thread": "01demo_have_monitor01",
+  "reply_to": "01demo_bid_monitor01",
+  "body": {
+    "bid_id": "01demo_bid_monitor01",
+    "message": "可以，周六 13:00 小区南门"
+  },
+  "sig": null
+}

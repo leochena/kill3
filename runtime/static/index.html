@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>free-match — 自由匹配板</title>
+  <link rel="stylesheet" href="/app.css" />
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>free-match</h1>
+      <p class="tagline">无平台抽成 · 无软件监管 · 好坏由评价 · 违法归政府</p>
+    </div>
+    <div class="meta" id="healthMeta">连接中…</div>
+  </header>
+
+  <main class="grid">
+    <section class="card">
+      <h2>发单</h2>
+      <div class="row">
+        <label>场景 vertical
+          <select id="vertical">
+            <option value="goods_unique">闲置/孤品</option>
+            <option value="goods_stock">多库存商品</option>
+            <option value="food_order">外卖</option>
+            <option value="ride">打车</option>
+            <option value="errand">跑腿</option>
+            <option value="service">服务</option>
+            <option value="bulk_rfq">询价采购</option>
+          </select>
+        </label>
+        <label>匹配 mode
+          <select id="mode">
+            <option value="one_to_many">一对多 1→N（多报价选一）</option>
+            <option value="broadcast_claim">抢单 broadcast</option>
+            <option value="many_to_one">多对一 N→1</option>
+            <option value="one_to_one">一对一 1↔1</option>
+            <option value="many_to_many">多对多</option>
+          </select>
+        </label>
+        <label>角色
+          <select id="role">
+            <option value="buyer">买家 want</option>
+            <option value="seller">卖家 have</option>
+            <option value="courier">快递/司机 offer</option>
+          </select>
+        </label>
+      </div>
+      <div class="row">
+        <label>显示名
+          <input id="display" placeholder="你的称呼" value="访客" />
+        </label>
+        <label>Actor ID
+          <input id="actorId" placeholder="自动生成" />
+        </label>
+        <label>max_accepts
+          <input id="maxAccepts" type="number" min="1" value="1" />
+        </label>
+      </div>
+      <div class="row">
+        <label class="grow">标题 / 物品
+          <input id="title" placeholder="例如：二手显示器 / 同城跑腿" />
+        </label>
+        <label>金额
+          <input id="amount" placeholder="500" />
+        </label>
+        <label>货币
+          <input id="currency" value="CNY" />
+        </label>
+      </div>
+      <div class="row">
+        <label>地区
+          <input id="region" placeholder="上海-浦东" />
+        </label>
+        <label class="check"><input type="checkbox" id="needCourier" /> 需要快递</label>
+      </div>
+      <label class="block">备注
+        <textarea id="notes" rows="3" placeholder="交付方式、时间、当面验货等（协议不审查内容）"></textarea>
+      </label>
+      <div class="actions">
+        <button id="btnPost" class="primary">发布到板</button>
+        <button id="btnRefresh">刷新列表</button>
+      </div>
+      <pre id="postResult" class="log"></pre>
+    </section>
+
+    <section class="card">
+      <h2>板子</h2>
+      <div class="row">
+        <label>类型
+          <input id="filterType" value="want,have,deal,courier.offer" />
+        </label>
+        <label class="grow">搜索
+          <input id="filterQ" placeholder="关键词" />
+        </label>
+        <label>地区
+          <input id="filterRegion" placeholder="" />
+        </label>
+      </div>
+      <div id="list" class="list"></div>
+    </section>
+
+    <section class="card wide">
+      <h2>线程 / 评价</h2>
+      <div class="row">
+        <label class="grow">消息 ID
+          <input id="threadId" placeholder="点列表中的 id，或粘贴 root id" />
+        </label>
+        <button id="btnThread">看线程</button>
+        <label class="grow">Actor
+          <input id="reviewActor" placeholder="评价对象 actor id" />
+        </label>
+        <button id="btnReviews">评价汇总</button>
+      </div>
+      <pre id="threadView" class="log tall"></pre>
+    </section>
+  </main>
+
+  <footer>
+    <p>本板只是<strong>哑管道</strong>：存消息、列消息。不抽成、不审核、不强制实名。协议 v1 · <a href="/api/v1/meta">API meta</a> · <a href="/health">health</a></p>
+  </footer>
+  <script src="/app.js"></script>
+</body>
+</html>

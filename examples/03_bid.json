@@ -1,0 +1,28 @@
+{
+  "v": 1,
+  "id": "01demo_bid_monitor01",
+  "type": "bid",
+  "ts": "2026-07-25T02:20:00Z",
+  "from": {
+    "id": "demo_buyer_ada",
+    "display": "Ada",
+    "roles": ["buyer"]
+  },
+  "thread": "01demo_have_monitor01",
+  "reply_to": "01demo_have_monitor01",
+  "body": {
+    "target_id": "01demo_have_monitor01",
+    "price": { "amount": "450", "currency": "CNY" },
+    "qty": 1,
+    "payment": {
+      "methods": ["cash", "wechat"],
+      "timing": "on_delivery"
+    },
+    "delivery": {
+      "mode": "meetup",
+      "eta": "本周六下午"
+    },
+    "message": "450 现金面交可以吗"
+  },
+  "sig": null
+}

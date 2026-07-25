@@ -1,0 +1,17 @@
+# free-match ignores
+runtime/board/messages/*.json
+!runtime/board/messages/.gitignore
+runtime/board/identities/*
+!runtime/board/identities/.gitignore
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.DS_Store
+.env
+.claude/skills/free-match
+.claude/settings.local.json
+*.log
+.idea/
+.vscode/

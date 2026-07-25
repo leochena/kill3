@@ -1,0 +1,280 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://free-match.local/schemas/bodies.json",
+  "title": "FreeMatchBodyTypes",
+  "description": "Body schemas keyed by envelope.type. Software must not add content-policy fields.",
+  "$defs": {
+    "money": {
+      "type": "object",
+      "required": ["amount", "currency"],
+      "additionalProperties": false,
+      "properties": {
+        "amount": { "type": "string", "description": "Decimal string, e.g. \"42.50\"" },
+        "currency": { "type": "string", "description": "ISO 4217 or free token code, e.g. CNY, USD, USDT" }
+      }
+    },
+    "place": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": ["string", "null"] },
+        "geo": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "properties": {
+            "lat": { "type": "number" },
+            "lon": { "type": "number" },
+            "radius_m": { "type": ["number", "null"] }
+          }
+        },
+        "region": { "type": ["string", "null"], "description": "Free text: city/district" },
+        "privacy": {
+          "type": "string",
+          "enum": ["public", "after_deal", "direct_only"],
+          "default": "after_deal"
+        }
+      }
+    },
+    "item": {
+      "type": "object",
+      "required": ["title"],
+      "additionalProperties": false,
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": ["string", "null"] },
+        "qty": { "type": ["number", "null"] },
+        "unit": { "type": ["string", "null"] },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "condition": {
+          "type": ["string", "null"],
+          "description": "new|used|service|digital|other — free text allowed"
+        },
+        "attachments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["uri"],
+            "additionalProperties": false,
+            "properties": {
+              "uri": { "type": "string" },
+              "mime": { "type": ["string", "null"] },
+              "sha256": { "type": ["string", "null"] }
+            }
+          }
+        }
+      }
+    },
+    "payment_terms": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "methods": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "cash|bank|alipay|wechat|btc|usdt|other — free text"
+          }
+        },
+        "timing": {
+          "type": ["string", "null"],
+          "description": "upfront|on_delivery|split|custom"
+        },
+        "details": { "type": ["string", "null"], "description": "Peer-agreed instructions only" }
+      }
+    },
+    "want_body": {
+      "type": "object",
+      "required": ["item"],
+      "additionalProperties": false,
+      "properties": {
+        "item": { "$ref": "#/$defs/item" },
+        "budget": { "oneOf": [{ "$ref": "#/$defs/money" }, { "type": "null" }] },
+        "where": { "oneOf": [{ "$ref": "#/$defs/place" }, { "type": "null" }] },
+        "need_courier": { "type": ["boolean", "null"] },
+        "notes": { "type": ["string", "null"] }
+      }
+    },
+    "have_body": {
+      "type": "object",
+      "required": ["item"],
+      "additionalProperties": false,
+      "properties": {
+        "item": { "$ref": "#/$defs/item" },
+        "price": { "oneOf": [{ "$ref": "#/$defs/money" }, { "type": "null" }] },
+        "where": { "oneOf": [{ "$ref": "#/$defs/place" }, { "type": "null" }] },
+        "stock": { "type": ["number", "null"] },
+        "notes": { "type": ["string", "null"] }
+      }
+    },
+    "bid_body": {
+      "type": "object",
+      "required": ["target_id", "price"],
+      "additionalProperties": false,
+      "properties": {
+        "target_id": { "type": "string", "description": "want or have message id" },
+        "price": { "$ref": "#/$defs/money" },
+        "qty": { "type": ["number", "null"] },
+        "payment": { "oneOf": [{ "$ref": "#/$defs/payment_terms" }, { "type": "null" }] },
+        "delivery": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "properties": {
+            "mode": { "type": "string", "description": "meetup|ship|courier|digital|other" },
+            "eta": { "type": ["string", "null"] },
+            "where": { "oneOf": [{ "$ref": "#/$defs/place" }, { "type": "null" }] }
+          }
+        },
+        "message": { "type": ["string", "null"] }
+      }
+    },
+    "accept_body": {
+      "type": "object",
+      "required": ["bid_id"],
+      "additionalProperties": false,
+      "properties": {
+        "bid_id": { "type": "string" },
+        "message": { "type": ["string", "null"] }
+      }
+    },
+    "reject_body": {
+      "type": "object",
+      "required": ["bid_id"],
+      "additionalProperties": false,
+      "properties": {
+        "bid_id": { "type": "string" },
+        "reason": { "type": ["string", "null"], "description": "Optional free text; no enum of 'policy' reasons" }
+      }
+    },
+    "deal_body": {
+      "type": "object",
+      "required": ["parties", "item", "price"],
+      "additionalProperties": false,
+      "properties": {
+        "parties": {
+          "type": "object",
+          "required": ["buyer", "seller"],
+          "additionalProperties": false,
+          "properties": {
+            "buyer": { "type": "string" },
+            "seller": { "type": "string" },
+            "courier": { "type": ["string", "null"] }
+          }
+        },
+        "item": { "$ref": "#/$defs/item" },
+        "price": { "$ref": "#/$defs/money" },
+        "payment": { "oneOf": [{ "$ref": "#/$defs/payment_terms" }, { "type": "null" }] },
+        "delivery": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "properties": {
+            "mode": { "type": "string" },
+            "from": { "oneOf": [{ "$ref": "#/$defs/place" }, { "type": "null" }] },
+            "to": { "oneOf": [{ "$ref": "#/$defs/place" }, { "type": "null" }] },
+            "courier_fee": { "oneOf": [{ "$ref": "#/$defs/money" }, { "type": "null" }] }
+          }
+        },
+        "based_on": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Message ids: want/have/bid/accept"
+        },
+        "terms": { "type": ["string", "null"] }
+      }
+    },
+    "fulfill_body": {
+      "type": "object",
+      "required": ["deal_id", "event"],
+      "additionalProperties": false,
+      "properties": {
+        "deal_id": { "type": "string" },
+        "event": {
+          "type": "string",
+          "description": "shipped|picked_up|in_transit|delivered|service_done|other"
+        },
+        "proof": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["uri"],
+            "additionalProperties": false,
+            "properties": {
+              "uri": { "type": "string" },
+              "note": { "type": ["string", "null"] }
+            }
+          }
+        },
+        "note": { "type": ["string", "null"] }
+      }
+    },
+    "confirm_body": {
+      "type": "object",
+      "required": ["deal_id", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "deal_id": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["received", "paid", "complete", "disputed", "cancelled"]
+        },
+        "note": { "type": ["string", "null"] }
+      }
+    },
+    "review_body": {
+      "type": "object",
+      "required": ["subject_id", "deal_id", "stars"],
+      "additionalProperties": false,
+      "properties": {
+        "subject_id": { "type": "string", "description": "Actor being reviewed" },
+        "deal_id": { "type": "string" },
+        "stars": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "text": { "type": ["string", "null"] },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "courier_offer_body": {
+      "type": "object",
+      "required": ["target_id", "fee"],
+      "additionalProperties": false,
+      "properties": {
+        "target_id": { "type": "string", "description": "deal, want, or have needing transport" },
+        "fee": { "$ref": "#/$defs/money" },
+        "eta": { "type": ["string", "null"] },
+        "vehicle": { "type": ["string", "null"] },
+        "message": { "type": ["string", "null"] }
+      }
+    },
+    "courier_accept_body": {
+      "type": "object",
+      "required": ["offer_id"],
+      "additionalProperties": false,
+      "properties": {
+        "offer_id": { "type": "string" },
+        "message": { "type": ["string", "null"] }
+      }
+    },
+    "identity_announce_body": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "pubkey": { "type": ["string", "null"] },
+        "algo": { "type": ["string", "null"], "description": "ed25519 recommended" },
+        "bio": { "type": ["string", "null"] },
+        "roles": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "prefs": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "User preferences only — not protocol policy"
+        }
+      }
+    }
+  }
+}

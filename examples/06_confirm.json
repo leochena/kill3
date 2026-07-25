@@ -1,0 +1,17 @@
+{
+  "v": 1,
+  "id": "01demo_confirm_monitor01",
+  "type": "confirm",
+  "ts": "2026-07-25T06:00:00Z",
+  "from": {
+    "id": "demo_buyer_ada",
+    "roles": ["buyer"]
+  },
+  "thread": "01demo_have_monitor01",
+  "body": {
+    "deal_id": "01demo_deal_monitor01",
+    "status": "complete",
+    "note": "货已收，已付款"
+  },
+  "sig": null
+}
