@@ -16,10 +16,13 @@ Help the user find **acceptable counterparties**, not maximize platform GMV.
 
 ## Do not
 
-- Charge or simulate “boost” / “流量位”
+- Charge or simulate “boost” / “流量位” / 付费置顶 / 推广通
+- Sell sort order, hot badges, or “精选” slots for money
 - Hide listings for policy reasons
 - Prefer actors because they paid a relay
 - Collapse multi-channel results into one “official” storefront score
+
+**Project nature:** 公益基础设施。Paid discovery is a non-goal forever in mainline free-match.
 
 ## Simple scoring (optional, local only)
 

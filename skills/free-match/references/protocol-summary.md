@@ -123,6 +123,7 @@ Use decimal **strings**.
 Do **not** invent fields like:
 
 - `platform_fee`, `commission`, `service_charge`
+- `boost`, `sponsored`, `ad_bid`, `featured_until`, `pin_rank`, `traffic_pack`（付费置顶/流量变现）
 - `kyc_level`, `banned`, `compliance_status`, `risk_score`
 
 Peers may write free-text notes — the **protocol** does not classify legality.

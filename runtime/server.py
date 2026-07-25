@@ -107,7 +107,10 @@ class Handler(BaseHTTPRequestHandler):
                             "platform_fee": False,
                             "content_moderation": False,
                             "kyc_required": False,
-                            "note": "dumb pipe; law is government's job; quality is peer reviews",
+                            "paid_boost": False,
+                            "sponsored_ranking": False,
+                            "project": "public-interest",
+                            "note": "dumb pipe; public-interest; no rent; no paid pin; law is government's job; quality is peer reviews",
                         },
                         "stats": STORE.stats(),
                     }

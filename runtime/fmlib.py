@@ -46,6 +46,15 @@ FORBIDDEN_FIELDS = (
     "risk_score",
     "ban_reason",
     "content_policy",
+    # paid discovery / rent — public-interest project, never
+    "boost",
+    "boost_score",
+    "sponsored",
+    "ad_bid",
+    "promotion_fee",
+    "featured_until",
+    "pin_rank",
+    "traffic_pack",
 )
 
 

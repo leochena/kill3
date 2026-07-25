@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2 — 2026-07-25
+
+- Project nature: **public-interest / 公益** — no paid boost forever in mainline
+- Reject boost/sponsored/ad_bid/pin_rank fields in validation
+- Docs, skill, CONTRIBUTING, health policy state anti-rent discovery
+
 ## 0.1.1 — 2026-07-25
 
 - Geo: haversine distance, `where.geo` on posts
