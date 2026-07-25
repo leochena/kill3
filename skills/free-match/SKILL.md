@@ -123,7 +123,13 @@ Prefer project `.venv` Python if present.
 - When advising, aggregate visible reviews **per actor id**; say if sample size is small.
 - Users may keep personal block lists — implement as **local prefs**, never as global protocol bans.
 
-## Payment & delivery
+## Location & distance
+
+- Put coordinates in `body.where.geo` (`lat`, `lon`, optional `radius_m`).
+- Boards can filter: `near_lat`, `near_lon`, `radius_m`, `sort=distance`.
+- Always show human distance (m/km) when both sides have geo.
+- Web UI: browser GPS or OSM map pick. See `docs/location.md`.
+- Never require a paid map API in the protocol.
 
 - Methods are free text in `payment.methods` (cash, bank, chain, etc.).
 - Timing: upfront / on_delivery / split / custom — peer agreed only.

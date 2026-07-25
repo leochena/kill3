@@ -11,6 +11,7 @@ import sys
 import tempfile
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -240,6 +241,103 @@ def scenario_food(board_url, store) -> dict:
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def scenario_geo(board_url, store) -> dict:
+    """Two shops with geo — list by distance from customer."""
+    tmp = Path(tempfile.mkdtemp(prefix="fm_geo_"))
+    try:
+        shop_near = actor("shop_near", tmp, ["seller"])
+        shop_far = actor("shop_far", tmp, ["seller"])
+        # Customer origin: Lujiazui-ish
+        origin = (31.2397, 121.4998)
+        near = env(
+            shop_near,
+            "have",
+            {
+                "item": {"title": "黄焖鸡-近", "tags": ["food"]},
+                "price": {"amount": "26", "currency": "CNY"},
+                "where": {
+                    "region": "上海-浦东",
+                    "geo": {"lat": 31.235, "lon": 121.505, "radius_m": 3000},
+                    "privacy": "public",
+                },
+                "match": {"mode": "one_to_many", "vertical": "food_order", "max_accepts": 1},
+            },
+        )
+        far = env(
+            shop_far,
+            "have",
+            {
+                "item": {"title": "黄焖鸡-远", "tags": ["food"]},
+                "price": {"amount": "22", "currency": "CNY"},
+                "where": {
+                    "region": "上海-松江",
+                    "geo": {"lat": 31.032, "lon": 121.227, "radius_m": 5000},
+                    "privacy": "public",
+                },
+                "match": {"mode": "one_to_many", "vertical": "food_order", "max_accepts": 1},
+            },
+        )
+        post(board_url, store, near)
+        post(board_url, store, far)
+        # distance API
+        dist = http_json(
+            "GET",
+            board_url.rstrip("/")
+            + f"/api/v1/distance?from_id={near['id']}&to_id={far['id']}",
+        )
+        assert dist.get("distance_m", 0) > 1000, dist
+        # nearby list sorted by distance
+        rows = http_json(
+            "GET",
+            board_url.rstrip("/")
+            + "/api/v1/messages?"
+            + urllib.parse.urlencode(
+                {
+                    "type": "have",
+                    "summary": "1",
+                    "near_lat": origin[0],
+                    "near_lon": origin[1],
+                    "radius_m": 50000,
+                    "sort": "distance",
+                    "q": "黄焖鸡",
+                }
+            ),
+        )
+        msgs = rows.get("messages") or []
+        geo_msgs = [m for m in msgs if m.get("title") in ("黄焖鸡-近", "黄焖鸡-远")]
+        assert len(geo_msgs) >= 2, rows
+        assert geo_msgs[0]["title"] == "黄焖鸡-近", geo_msgs
+        assert geo_msgs[0]["distance_m"] < geo_msgs[1]["distance_m"], geo_msgs
+        # radius filter excludes far if tight
+        tight = http_json(
+            "GET",
+            board_url.rstrip("/")
+            + "/api/v1/messages?"
+            + urllib.parse.urlencode(
+                {
+                    "type": "have",
+                    "summary": "1",
+                    "near_lat": origin[0],
+                    "near_lon": origin[1],
+                    "radius_m": 3000,
+                    "sort": "distance",
+                    "q": "黄焖鸡",
+                }
+            ),
+        )
+        titles = {m.get("title") for m in (tight.get("messages") or [])}
+        assert "黄焖鸡-近" in titles
+        assert "黄焖鸡-远" not in titles
+        return {
+            "vertical": "geo",
+            "shop_distance_m": dist["distance_m"],
+            "near_first": geo_msgs[0]["distance_text"],
+            "radius_filter_ok": True,
+        }
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def scenario_ride(board_url, store) -> dict:
     """打车：1 want → N driver offers → passenger accept one (many_to_one / broadcast_claim)."""
     tmp = Path(tempfile.mkdtemp(prefix="fm_ride_"))
@@ -401,6 +499,7 @@ def main() -> int:
         results = {
             "goods_unique": scenario_goods(board_url, store),
             "food_order": scenario_food(board_url, store),
+            "geo": scenario_geo(board_url, store),
             "ride": scenario_ride(board_url, store),
             "fee_blocked": fee_blocked,
             "board": board_url,

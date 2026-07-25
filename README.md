@@ -52,6 +52,17 @@ python runtime/fm.py --board http://127.0.0.1:8787 list --type want,have
 
 Windows 也可：`scripts\run-board.bat` 、 `scripts\smoke.bat`。
 
+## 定位与距离
+
+发单可写 `where.geo.lat/lon`；列表支持：
+
+```bash
+python runtime/fm.py list --type have \
+  --near-lat 31.24 --near-lon 121.50 --radius-m 5000 --sort distance
+```
+
+Web UI：浏览器定位 / 地图选点 + OpenStreetMap 展示距离。详见 [docs/location.md](docs/location.md)。
+
 ## 一对一 / 一对多 / 场景
 
 协议用 `body.match` 表达基数与业态（**板子不强制锁单，智能体按规则提示**）：

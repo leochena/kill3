@@ -122,8 +122,44 @@ class Handler(BaseHTTPRequestHandler):
                 limit = int((qs.get("limit") or ["200"])[0])
                 offset = int((qs.get("offset") or ["0"])[0])
                 summary = (qs.get("summary") or ["0"])[0] in ("1", "true", "yes")
-                rows = STORE.query(types=types, q=q, region=region, limit=limit, offset=offset, summary=summary)
-                code, body, ct = json_bytes({"messages": rows, "count": len(rows)})
+                require_geo = (qs.get("require_geo") or ["0"])[0] in ("1", "true", "yes")
+                sort = (qs.get("sort") or ["time"])[0]
+                near_lat = qs.get("near_lat") or qs.get("lat")
+                near_lon = qs.get("near_lon") or qs.get("lon")
+                radius = qs.get("radius_m") or qs.get("radius")
+                try:
+                    nlat = float(near_lat[0]) if near_lat and near_lat[0] != "" else None
+                    nlon = float(near_lon[0]) if near_lon and near_lon[0] != "" else None
+                    rad = float(radius[0]) if radius and radius[0] != "" else None
+                except ValueError:
+                    code, body, ct = json_bytes({"error": "invalid near_lat/near_lon/radius_m"}, 400)
+                    return self._send(code, body, ct)
+                try:
+                    rows = STORE.query(
+                        types=types,
+                        q=q,
+                        region=region,
+                        limit=limit,
+                        offset=offset,
+                        summary=summary,
+                        near_lat=nlat,
+                        near_lon=nlon,
+                        radius_m=rad,
+                        require_geo=require_geo,
+                        sort=sort,
+                    )
+                except ValueError as e:
+                    code, body, ct = json_bytes({"error": str(e)}, 400)
+                    return self._send(code, body, ct)
+                code, body, ct = json_bytes(
+                    {
+                        "messages": rows,
+                        "count": len(rows),
+                        "origin": {"lat": nlat, "lon": nlon} if nlat is not None and nlon is not None else None,
+                        "radius_m": rad,
+                        "sort": sort,
+                    }
+                )
                 return self._send(code, body, ct)
 
             if path.startswith("/api/v1/messages/"):
@@ -135,8 +171,80 @@ class Handler(BaseHTTPRequestHandler):
                 if not msg:
                     code, body, ct = json_bytes({"error": "not found"}, 404)
                     return self._send(code, body, ct)
+                # optional distance annotation
+                near_lat = qs.get("near_lat") or qs.get("lat")
+                near_lon = qs.get("near_lon") or qs.get("lon")
+                if near_lat and near_lon and near_lat[0] != "" and near_lon[0] != "":
+                    from fmlib import extract_geo, format_distance_m, haversine_m
+
+                    try:
+                        o = (float(near_lat[0]), float(near_lon[0]))
+                        g = extract_geo(msg)
+                        if g:
+                            d = round(haversine_m(o[0], o[1], g[0], g[1]), 1)
+                            msg = dict(msg)
+                            msg["_distance_m"] = d
+                            msg["_distance_text"] = format_distance_m(d)
+                    except ValueError:
+                        pass
                 code, body, ct = json_bytes(msg)
                 return self._send(code, body, ct)
+
+            if path == "/api/v1/distance":
+                # GET /api/v1/distance?from_lat=&from_lon=&to_lat=&to_lon=
+                # or ?from_id=&to_id=
+                from fmlib import extract_geo, format_distance_m, haversine_m
+
+                fl = qs.get("from_lat")
+                fo = qs.get("from_lon")
+                tl = qs.get("to_lat")
+                to = qs.get("to_lon")
+                fid = (qs.get("from_id") or [None])[0]
+                tid = (qs.get("to_id") or [None])[0]
+                try:
+                    if fid and tid:
+                        a, b = STORE.get(fid), STORE.get(tid)
+                        if not a or not b:
+                            code, body, ct = json_bytes({"error": "message not found"}, 404)
+                            return self._send(code, body, ct)
+                        ga, gb = extract_geo(a), extract_geo(b)
+                        if not ga or not gb:
+                            code, body, ct = json_bytes({"error": "one or both messages lack geo"}, 400)
+                            return self._send(code, body, ct)
+                        d = round(haversine_m(ga[0], ga[1], gb[0], gb[1]), 1)
+                        code, body, ct = json_bytes(
+                            {
+                                "from_id": fid,
+                                "to_id": tid,
+                                "from": {"lat": ga[0], "lon": ga[1]},
+                                "to": {"lat": gb[0], "lon": gb[1]},
+                                "distance_m": d,
+                                "distance_text": format_distance_m(d),
+                            }
+                        )
+                        return self._send(code, body, ct)
+                    if fl and fo and tl and to:
+                        d = round(
+                            haversine_m(float(fl[0]), float(fo[0]), float(tl[0]), float(to[0])),
+                            1,
+                        )
+                        code, body, ct = json_bytes(
+                            {
+                                "from": {"lat": float(fl[0]), "lon": float(fo[0])},
+                                "to": {"lat": float(tl[0]), "lon": float(to[0])},
+                                "distance_m": d,
+                                "distance_text": format_distance_m(d),
+                            }
+                        )
+                        return self._send(code, body, ct)
+                    code, body, ct = json_bytes(
+                        {"error": "need from_lat/from_lon/to_lat/to_lon or from_id/to_id"},
+                        400,
+                    )
+                    return self._send(code, body, ct)
+                except ValueError:
+                    code, body, ct = json_bytes({"error": "invalid coordinates"}, 400)
+                    return self._send(code, body, ct)
 
             if path.startswith("/api/v1/thread/"):
                 root = path[len("/api/v1/thread/") :]
@@ -160,12 +268,19 @@ class Handler(BaseHTTPRequestHandler):
                         "endpoints": [
                             "GET /health",
                             "GET /api/v1/messages",
+                            "GET /api/v1/messages?near_lat=&near_lon=&radius_m=&sort=distance",
                             "GET /api/v1/messages/{id}",
                             "POST /api/v1/messages",
                             "GET /api/v1/thread/{id}",
                             "GET /api/v1/reviews/{actor_id}",
+                            "GET /api/v1/distance?from_id=&to_id=",
                             "GET /api/v1/stats",
                         ],
+                        "geo": {
+                            "place_fields": ["where.region", "where.geo.lat", "where.geo.lon", "where.geo.radius_m"],
+                            "distance": "haversine meters",
+                            "map": "OSM tiles in Web UI (client-side)",
+                        },
                         "forbidden_server_behaviors": [
                             "charging fees",
                             "content moderation as protocol",

@@ -6,6 +6,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import math
 import threading
 import time
 import uuid
@@ -216,12 +217,100 @@ def public_identity(doc: dict[str, Any]) -> dict[str, Any]:
     return {k: v for k, v in doc.items() if k != "privkey"}
 
 
-def summarize_row(m: dict[str, Any]) -> dict[str, Any]:
+def haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Great-circle distance in meters (WGS84 sphere)."""
+    r = 6371000.0
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlmb = math.radians(lon2 - lon1)
+    a = math.sin(dphi / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dlmb / 2) ** 2
+    return 2 * r * math.asin(min(1.0, math.sqrt(a)))
+
+
+def format_distance_m(meters: float | None) -> str | None:
+    if meters is None:
+        return None
+    if meters < 1000:
+        return f"{int(round(meters))} m"
+    return f"{meters / 1000.0:.1f} km"
+
+
+def extract_geo(msg: dict[str, Any]) -> tuple[float, float] | None:
+    """Best-effort lat/lon from message body places."""
+    body = msg.get("body") or {}
+    candidates: list[Any] = []
+    where = body.get("where")
+    if isinstance(where, dict):
+        candidates.append(where)
+        if isinstance(where.get("geo"), dict):
+            candidates.append(where["geo"])
+    delivery = body.get("delivery")
+    if isinstance(delivery, dict):
+        for key in ("from", "to", "where"):
+            p = delivery.get(key)
+            if isinstance(p, dict):
+                candidates.append(p)
+                if isinstance(p.get("geo"), dict):
+                    candidates.append(p["geo"])
+    # also top-level geo if someone put it on body
+    if isinstance(body.get("geo"), dict):
+        candidates.append(body["geo"])
+    for c in candidates:
+        if not isinstance(c, dict):
+            continue
+        lat, lon = c.get("lat"), c.get("lon")
+        if lat is None or lon is None:
+            g = c.get("geo")
+            if isinstance(g, dict):
+                lat, lon = g.get("lat"), g.get("lon")
+        try:
+            if lat is None or lon is None:
+                continue
+            la, lo = float(lat), float(lon)
+            if -90 <= la <= 90 and -180 <= lo <= 180:
+                return la, lo
+        except (TypeError, ValueError):
+            continue
+    return None
+
+
+def build_place(
+    region: str | None = None,
+    lat: float | None = None,
+    lon: float | None = None,
+    radius_m: float | None = None,
+    label: str | None = None,
+    privacy: str = "after_deal",
+) -> dict[str, Any] | None:
+    if region is None and lat is None and lon is None and label is None:
+        return None
+    place: dict[str, Any] = {"privacy": privacy}
+    if region:
+        place["region"] = region
+    if label:
+        place["label"] = label
+    if lat is not None and lon is not None:
+        place["geo"] = {"lat": float(lat), "lon": float(lon)}
+        if radius_m is not None:
+            place["geo"]["radius_m"] = float(radius_m)
+    elif lat is not None or lon is not None:
+        raise ValueError("lat and lon must be provided together")
+    return place
+
+
+def summarize_row(
+    m: dict[str, Any],
+    origin: tuple[float, float] | None = None,
+) -> dict[str, Any]:
     body = m.get("body") or {}
     item = body.get("item") or {}
     where = body.get("where") or {}
     reg = (where.get("region") or "") if isinstance(where, dict) else ""
     match = body.get("match") if isinstance(body.get("match"), dict) else {}
+    geo = extract_geo(m)
+    distance_m = None
+    if origin and geo:
+        distance_m = round(haversine_m(origin[0], origin[1], geo[0], geo[1]), 1)
     return {
         "id": m.get("id"),
         "type": m.get("type"),
@@ -230,12 +319,19 @@ def summarize_row(m: dict[str, Any]) -> dict[str, Any]:
         "title": item.get("title") or "",
         "price": body.get("price") or body.get("budget") or body.get("fee"),
         "region": reg,
+        "lat": geo[0] if geo else None,
+        "lon": geo[1] if geo else None,
+        "distance_m": distance_m,
+        "distance_text": format_distance_m(distance_m),
         "ts": m.get("ts"),
         "thread": m.get("thread"),
         "ttl_sec": m.get("ttl_sec"),
         "match_mode": match.get("mode"),
         "vertical": match.get("vertical"),
-        "body": {"match": match} if match else {},
+        "body": {
+            "match": match,
+            "where": where if isinstance(where, dict) else None,
+        },
     }
 
 
@@ -244,6 +340,9 @@ def match_filters(
     types: set[str] | None = None,
     q: str = "",
     region: str = "",
+    origin: tuple[float, float] | None = None,
+    radius_m: float | None = None,
+    require_geo: bool = False,
 ) -> bool:
     if types and m.get("type") not in types:
         return False
@@ -254,6 +353,14 @@ def match_filters(
         return False
     if q and q.lower() not in json.dumps(m, ensure_ascii=False).lower():
         return False
+    geo = extract_geo(m)
+    if require_geo and not geo:
+        return False
+    if origin is not None and radius_m is not None:
+        if not geo:
+            return False
+        if haversine_m(origin[0], origin[1], geo[0], geo[1]) > float(radius_m):
+            return False
     return True
 
 
@@ -358,12 +465,60 @@ class BoardStore:
         limit: int = 200,
         offset: int = 0,
         summary: bool = False,
+        near_lat: float | None = None,
+        near_lon: float | None = None,
+        radius_m: float | None = None,
+        require_geo: bool = False,
+        sort: str = "time",
     ) -> list[dict[str, Any]]:
-        rows = [m for m in self.list_all() if match_filters(m, types, q, region)]
-        rows.sort(key=lambda m: m.get("ts") or "", reverse=True)
+        origin = None
+        if near_lat is not None and near_lon is not None:
+            origin = (float(near_lat), float(near_lon))
+        elif near_lat is not None or near_lon is not None:
+            raise ValueError("near_lat and near_lon must be provided together")
+
+        rows = [
+            m
+            for m in self.list_all()
+            if match_filters(
+                m,
+                types=types,
+                q=q,
+                region=region,
+                origin=origin,
+                radius_m=radius_m,
+                require_geo=require_geo,
+            )
+        ]
+
+        def dist_key(m: dict[str, Any]) -> float:
+            if not origin:
+                return 0.0
+            g = extract_geo(m)
+            if not g:
+                return float("inf")
+            return haversine_m(origin[0], origin[1], g[0], g[1])
+
+        if sort == "distance" and origin is not None:
+            rows.sort(key=lambda m: (dist_key(m), m.get("ts") or ""))
+        else:
+            rows.sort(key=lambda m: m.get("ts") or "", reverse=True)
+
         sliced = rows[offset : offset + max(1, min(limit, 1000))]
         if summary:
-            return [summarize_row(m) for m in sliced]
+            return [summarize_row(m, origin=origin) for m in sliced]
+        if origin is not None:
+            # annotate full messages too
+            out = []
+            for m in sliced:
+                mm = dict(m)
+                g = extract_geo(m)
+                if g:
+                    d = round(haversine_m(origin[0], origin[1], g[0], g[1]), 1)
+                    mm["_distance_m"] = d
+                    mm["_distance_text"] = format_distance_m(d)
+                out.append(mm)
+            return out
         return sliced
 
     def thread(self, root_id: str) -> list[dict[str, Any]]:
@@ -392,6 +547,11 @@ def build_want(
     notes: str | None = None,
     need_courier: bool = False,
     ttl: int = 172800,
+    lat: float | None = None,
+    lon: float | None = None,
+    radius_m: float | None = None,
+    label: str | None = None,
+    privacy: str = "after_deal",
 ) -> dict[str, Any]:
     return {
         "v": 1,
@@ -403,7 +563,7 @@ def build_want(
         "body": {
             "item": {"title": title, "description": desc, "condition": condition, "qty": qty},
             "budget": {"amount": str(budget), "currency": currency} if budget is not None else None,
-            "where": {"region": region} if region else None,
+            "where": build_place(region, lat, lon, radius_m, label, privacy),
             "need_courier": need_courier,
             "notes": notes,
         },
@@ -422,6 +582,11 @@ def build_have(
     stock: float = 1,
     notes: str | None = None,
     ttl: int = 604800,
+    lat: float | None = None,
+    lon: float | None = None,
+    radius_m: float | None = None,
+    label: str | None = None,
+    privacy: str = "after_deal",
 ) -> dict[str, Any]:
     return {
         "v": 1,
@@ -433,7 +598,7 @@ def build_have(
         "body": {
             "item": {"title": title, "description": desc, "condition": condition},
             "price": {"amount": str(price), "currency": currency} if price is not None else None,
-            "where": {"region": region} if region else None,
+            "where": build_place(region, lat, lon, radius_m, label, privacy),
             "stock": stock,
             "notes": notes,
         },

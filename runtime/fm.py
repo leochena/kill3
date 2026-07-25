@@ -78,20 +78,27 @@ class RemoteBoard:
         res = self._req("POST", "/api/v1/messages", msg, q)
         return res.get("message") or msg
 
-    def query(self, types=None, q="", region="", limit=200, offset=0, summary=False):
+    def query(self, types=None, q="", region="", limit=200, offset=0, summary=False,
+              near_lat=None, near_lon=None, radius_m=None, require_geo=False, sort="time"):
         type_s = ",".join(sorted(types)) if types else ""
-        res = self._req(
-            "GET",
-            "/api/v1/messages",
-            query={
-                "type": type_s,
-                "q": q,
-                "region": region,
-                "limit": str(limit),
-                "offset": str(offset),
-                "summary": "1" if summary else "0",
-            },
-        )
+        query = {
+            "type": type_s,
+            "q": q,
+            "region": region,
+            "limit": str(limit),
+            "offset": str(offset),
+            "summary": "1" if summary else "0",
+            "sort": sort,
+        }
+        if near_lat is not None:
+            query["near_lat"] = str(near_lat)
+        if near_lon is not None:
+            query["near_lon"] = str(near_lon)
+        if radius_m is not None:
+            query["radius_m"] = str(radius_m)
+        if require_geo:
+            query["require_geo"] = "1"
+        res = self._req("GET", "/api/v1/messages", query=query)
         return res.get("messages") or []
 
     def get(self, msg_id: str):
@@ -190,10 +197,21 @@ def cmd_post(args: argparse.Namespace) -> int:
 def cmd_list(args: argparse.Namespace) -> int:
     board = get_board(args)
     types = {t.strip() for t in (args.type or "").split(",") if t.strip()} or None
+    kwargs = dict(
+        types=types,
+        q=args.q or "",
+        region=args.region or "",
+        summary=True,
+        near_lat=args.near_lat,
+        near_lon=args.near_lon,
+        radius_m=args.radius_m,
+        require_geo=args.require_geo,
+        sort=args.sort,
+    )
     if isinstance(board, RemoteBoard):
-        rows = board.query(types=types, q=args.q or "", region=args.region or "", summary=True)
+        rows = board.query(**kwargs)
     else:
-        rows = board.query(types=types, q=args.q or "", region=args.region or "", summary=True)
+        rows = board.query(**kwargs)
     emit(rows)
     return 0
 
@@ -211,22 +229,36 @@ def cmd_get(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_thread(args: argparse.Namespace) -> int:
-    board = get_board(args)
-    if isinstance(board, RemoteBoard):
-        msgs = board.thread(args.root_id)
-    else:
-        msgs = board.thread(args.root_id)
-    emit(msgs)
-    return 0
+def cmd_distance(args: argparse.Namespace) -> int:
+    from fmlib import extract_geo, format_distance_m, haversine_m
 
-
-def cmd_review_summary(args: argparse.Namespace) -> int:
     board = get_board(args)
-    if isinstance(board, RemoteBoard):
-        emit(board.reviews(args.actor_id))
+    if args.from_id and args.to_id:
+        if isinstance(board, RemoteBoard):
+            url_path = f"/api/v1/distance?from_id={args.from_id}&to_id={args.to_id}"
+            # reuse remote
+            res = board._req("GET", f"/api/v1/distance", query={"from_id": args.from_id, "to_id": args.to_id})
+            emit(res)
+            return 0
+        a, b = board.get(args.from_id), board.get(args.to_id)
+        if not a or not b:
+            print("not found", file=sys.stderr)
+            return 1
+        ga, gb = extract_geo(a), extract_geo(b)
+        if not ga or not gb:
+            print("missing geo on one or both messages", file=sys.stderr)
+            return 1
+        d = round(haversine_m(ga[0], ga[1], gb[0], gb[1]), 1)
+        emit({"from_id": args.from_id, "to_id": args.to_id, "distance_m": d, "distance_text": format_distance_m(d),
+              "from": {"lat": ga[0], "lon": ga[1]}, "to": {"lat": gb[0], "lon": gb[1]}})
         return 0
-    emit(review_summary(board.list_all(), args.actor_id))
+    if None in (args.from_lat, args.from_lon, args.to_lat, args.to_lon):
+        print("need --from-id/--to-id or all of --from-lat --from-lon --to-lat --to-lon", file=sys.stderr)
+        return 1
+    d = round(haversine_m(args.from_lat, args.from_lon, args.to_lat, args.to_lon), 1)
+    emit({"distance_m": d, "distance_text": format_distance_m(d),
+          "from": {"lat": args.from_lat, "lon": args.from_lon},
+          "to": {"lat": args.to_lat, "lon": args.to_lon}})
     return 0
 
 
@@ -247,6 +279,11 @@ def cmd_want(args: argparse.Namespace) -> int:
         notes=args.notes,
         need_courier=args.need_courier,
         ttl=args.ttl,
+        lat=args.lat,
+        lon=args.lon,
+        radius_m=args.place_radius,
+        label=args.label,
+        privacy=args.privacy,
     )
     msg["body"] = attach_match(msg["body"], args.vertical, args.mode, args.max_accepts)
     if args.sign:
@@ -277,6 +314,11 @@ def cmd_have(args: argparse.Namespace) -> int:
         stock=args.stock,
         notes=args.notes,
         ttl=args.ttl,
+        lat=args.lat,
+        lon=args.lon,
+        radius_m=args.place_radius,
+        label=args.label,
+        privacy=args.privacy,
     )
     msg["body"] = attach_match(msg["body"], args.vertical, args.mode, args.max_accepts)
     if args.sign:
@@ -384,12 +426,27 @@ def build_parser() -> argparse.ArgumentParser:
     lst.add_argument("--type", default="want,have")
     lst.add_argument("--q", default="")
     lst.add_argument("--region", default="")
+    lst.add_argument("--near-lat", type=float, default=None)
+    lst.add_argument("--near-lon", type=float, default=None)
+    lst.add_argument("--radius-m", type=float, default=None)
+    lst.add_argument("--require-geo", action="store_true")
+    lst.add_argument("--sort", default="time", choices=["time", "distance"])
     lst.set_defaults(func=cmd_list)
 
     getp = sub.add_parser("get")
     add_board_args(getp)
     getp.add_argument("msg_id")
     getp.set_defaults(func=cmd_get)
+
+    dist = sub.add_parser("distance", help="distance between two geos or message ids")
+    add_board_args(dist)
+    dist.add_argument("--from-id", default=None)
+    dist.add_argument("--to-id", default=None)
+    dist.add_argument("--from-lat", type=float, default=None)
+    dist.add_argument("--from-lon", type=float, default=None)
+    dist.add_argument("--to-lat", type=float, default=None)
+    dist.add_argument("--to-lon", type=float, default=None)
+    dist.set_defaults(func=cmd_distance)
 
     th = sub.add_parser("thread")
     add_board_args(th)
@@ -407,6 +464,11 @@ def build_parser() -> argparse.ArgumentParser:
     w.add_argument("--budget", default=None)
     w.add_argument("--currency", default="CNY")
     w.add_argument("--region", default=None)
+    w.add_argument("--lat", type=float, default=None)
+    w.add_argument("--lon", type=float, default=None)
+    w.add_argument("--place-radius", type=float, default=None, help="service radius_m on the place")
+    w.add_argument("--label", default=None)
+    w.add_argument("--privacy", default="after_deal", choices=["public", "after_deal", "direct_only"])
     w.add_argument("--desc", default=None)
     w.add_argument("--condition", default=None)
     w.add_argument("--qty", type=float, default=1)
@@ -425,6 +487,11 @@ def build_parser() -> argparse.ArgumentParser:
     h.add_argument("--price", default=None)
     h.add_argument("--currency", default="CNY")
     h.add_argument("--region", default=None)
+    h.add_argument("--lat", type=float, default=None)
+    h.add_argument("--lon", type=float, default=None)
+    h.add_argument("--place-radius", type=float, default=None)
+    h.add_argument("--label", default=None)
+    h.add_argument("--privacy", default="after_deal", choices=["public", "after_deal", "direct_only"])
     h.add_argument("--desc", default=None)
     h.add_argument("--condition", default=None)
     h.add_argument("--stock", type=float, default=1)

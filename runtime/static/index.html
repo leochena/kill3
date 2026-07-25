@@ -4,13 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>free-match — 自由匹配板</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <link rel="stylesheet" href="/app.css" />
 </head>
 <body>
   <header class="top">
     <div>
       <h1>free-match</h1>
-      <p class="tagline">无平台抽成 · 无软件监管 · 好坏由评价 · 违法归政府</p>
+      <p class="tagline">无平台抽成 · 无软件监管 · 定位算距离 · 好坏由评价</p>
     </div>
     <div class="meta" id="healthMeta">连接中…</div>
   </header>
@@ -32,7 +33,7 @@
         </label>
         <label>匹配 mode
           <select id="mode">
-            <option value="one_to_many">一对多 1→N（多报价选一）</option>
+            <option value="one_to_many">一对多 1→N</option>
             <option value="broadcast_claim">抢单 broadcast</option>
             <option value="many_to_one">多对一 N→1</option>
             <option value="one_to_one">一对一 1↔1</option>
@@ -70,13 +71,36 @@
         </label>
       </div>
       <div class="row">
-        <label>地区
+        <label class="grow">地区
           <input id="region" placeholder="上海-浦东" />
+        </label>
+        <label>纬度 lat
+          <input id="lat" placeholder="31.2304" />
+        </label>
+        <label>经度 lon
+          <input id="lon" placeholder="121.4737" />
+        </label>
+      </div>
+      <div class="row">
+        <label>服务半径 m
+          <input id="placeRadius" placeholder="3000" />
+        </label>
+        <label>隐私
+          <select id="privacy">
+            <option value="public">public 公开坐标</option>
+            <option value="after_deal" selected>after_deal 成交后细址</option>
+            <option value="direct_only">direct_only 仅私聊</option>
+          </select>
         </label>
         <label class="check"><input type="checkbox" id="needCourier" /> 需要快递</label>
       </div>
+      <div class="actions">
+        <button type="button" id="btnLocate">使用我的定位</button>
+        <button type="button" id="btnMapPick">地图选点</button>
+        <span class="hint" id="locStatus">未定位</span>
+      </div>
       <label class="block">备注
-        <textarea id="notes" rows="3" placeholder="交付方式、时间、当面验货等（协议不审查内容）"></textarea>
+        <textarea id="notes" rows="2" placeholder="交付方式、门牌（可成交后再给）等"></textarea>
       </label>
       <div class="actions">
         <button id="btnPost" class="primary">发布到板</button>
@@ -86,7 +110,7 @@
     </section>
 
     <section class="card">
-      <h2>板子</h2>
+      <h2>附近 / 板子</h2>
       <div class="row">
         <label>类型
           <input id="filterType" value="want,have,deal,courier.offer" />
@@ -98,18 +122,41 @@
           <input id="filterRegion" placeholder="" />
         </label>
       </div>
+      <div class="row">
+        <label>附近半径 m
+          <input id="filterRadius" placeholder="5000" value="5000" />
+        </label>
+        <label>排序
+          <select id="filterSort">
+            <option value="distance">距离优先</option>
+            <option value="time">时间优先</option>
+          </select>
+        </label>
+        <label class="check"><input type="checkbox" id="onlyGeo" /> 只要有坐标</label>
+        <button type="button" id="btnNear">按我的位置查附近</button>
+      </div>
       <div id="list" class="list"></div>
     </section>
 
     <section class="card wide">
-      <h2>线程 / 评价</h2>
+      <h2>地图 <span class="hint">OpenStreetMap · 仅展示，非平台派单</span></h2>
+      <div id="map" class="map"></div>
+      <p class="hint">蓝点=你的位置；彩色标记=板上消息。点击标记可看距离。坐标写入协议 <code>where.geo</code>，距离用球面 haversine。</p>
+    </section>
+
+    <section class="card wide">
+      <h2>线程 / 双方距离 / 评价</h2>
       <div class="row">
-        <label class="grow">消息 ID
-          <input id="threadId" placeholder="点列表中的 id，或粘贴 root id" />
+        <label class="grow">消息 A
+          <input id="threadId" placeholder="点列表或地图标记" />
+        </label>
+        <label class="grow">消息 B（比距离）
+          <input id="distOtherId" placeholder="另一条消息 id" />
         </label>
         <button id="btnThread">看线程</button>
+        <button id="btnDist">算 A↔B 距离</button>
         <label class="grow">Actor
-          <input id="reviewActor" placeholder="评价对象 actor id" />
+          <input id="reviewActor" placeholder="评价对象" />
         </label>
         <button id="btnReviews">评价汇总</button>
       </div>
@@ -118,8 +165,9 @@
   </main>
 
   <footer>
-    <p>本板只是<strong>哑管道</strong>：存消息、列消息。不抽成、不审核、不强制实名。协议 v1 · <a href="/api/v1/meta">API meta</a> · <a href="/health">health</a></p>
+    <p>哑管道板：存消息、算距离、不抽成、不审核。协议 v1 · <a href="/api/v1/meta">API</a> · <a href="/health">health</a></p>
   </footer>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="/app.js"></script>
 </body>
 </html>
