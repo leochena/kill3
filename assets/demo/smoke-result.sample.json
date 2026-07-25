@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-25T06:23:45Z",
+  "generated_at": "2026-07-25T08:31:13Z",
   "smoke_exit_code": 0,
   "stdout_json": {
     "ok": true,
@@ -7,17 +7,17 @@
       "goods_unique": {
         "vertical": "goods_unique",
         "mode": "one_to_many→1",
-        "have": "fm19f97f1a88306ce62824c",
-        "deal": "fm19f97f1a88cbef4fe34d8",
+        "have": "fm19f98665ae0fbd6891bc5",
+        "deal": "fm19f98665b19f99b865096",
         "bids": 2
       },
       "food_order": {
         "vertical": "food_order",
-        "mode": "meal 1:1 + courier broadcast_claim",
-        "want": "fm19f97f1a894badb47b671",
-        "meal_deal": "fm19f97f1a89e6d18e4ef35",
+        "mode": "meal deal + courier offers → pick 1",
+        "want": "fm19f98665b2fffdf9907eb",
+        "meal_deal": "fm19f98665b387c88558a69",
         "courier_offers": 2,
-        "chosen_fee": "6"
+        "chosen_fee": "2.8"
       },
       "geo": {
         "vertical": "geo",
@@ -28,8 +28,8 @@
       "ride": {
         "vertical": "ride",
         "mode": "one_to_many offers → passenger picks 1",
-        "want": "fm19f97f1a95ef9e2c92e72",
-        "deal": "fm19f97f1a96858f008d94f"
+        "want": "fm19f98665c36608967ac31",
+        "deal": "fm19f98665c60e413b7b322"
       },
       "fee_blocked": true,
       "board": "http://127.0.0.1:19092",
@@ -37,7 +37,7 @@
         "ok": true,
         "service": "free-match-board",
         "v": 1,
-        "started_at": "2026-07-25T06:23:44Z",
+        "started_at": "2026-07-25T08:31:12Z",
         "policy": {
           "platform_fee": false,
           "content_moderation": false,
@@ -62,7 +62,7 @@
             "fulfill": 3,
             "confirm": 2
           },
-          "board": "D:\\Temp\\fm_board_11qjg_uh"
+          "board": "D:\\Temp\\fm_board_geg961e9"
         }
       }
     }

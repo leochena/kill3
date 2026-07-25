@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""End-to-end multi-peer smoke: 闲置 1:N, 外卖+快递, 打车抢单. Against local or --board URL."""
+"""End-to-end multi-peer smoke: goods 1:N, food+courier, ride offers, geo. Local or --board URL."""
 
 from __future__ import annotations
 
@@ -74,7 +74,7 @@ def env(from_actor: dict, typ: str, body: dict, **extra) -> dict:
 
 
 def scenario_goods(board_url, store) -> dict:
-    """闲置：1 have → N bid → 1 accept → deal → review (one_to_many)."""
+    """Unique goods: 1 have → N bid → 1 accept → deal → review."""
     tmp = Path(tempfile.mkdtemp(prefix="fm_goods_"))
     try:
         seller = actor("seller", tmp, ["seller"])
@@ -84,9 +84,9 @@ def scenario_goods(board_url, store) -> dict:
             seller,
             "have",
             {
-                "item": {"title": "闲置机械键盘", "condition": "used", "qty": 1},
-                "price": {"amount": "350", "currency": "CNY"},
-                "where": {"region": "上海-徐汇"},
+                "item": {"title": "Used mechanical keyboard", "condition": "used", "qty": 1},
+                "price": {"amount": "80", "currency": "EUR"},
+                "where": {"region": "Berlin-Mitte"},
                 "stock": 1,
                 "match": {
                     "mode": "one_to_many",
@@ -107,7 +107,7 @@ def scenario_goods(board_url, store) -> dict:
         bid2 = env(
             buyer2,
             "bid",
-            {"target_id": have["id"], "price": {"amount": "340", "currency": "CNY"}, "message": "340"},
+            {"target_id": have["id"], "price": {"amount": "75", "currency": "EUR"}, "message": "340"},
             thread=have["id"],
             reply_to=have["id"],
         )
@@ -116,7 +116,7 @@ def scenario_goods(board_url, store) -> dict:
         acc = env(
             seller,
             "accept",
-            {"bid_id": bid2["id"], "message": "卖给 buyer2"},
+            {"bid_id": bid2["id"], "message": "sold to buyer2"},
             thread=have["id"],
             reply_to=bid2["id"],
         )
@@ -126,11 +126,11 @@ def scenario_goods(board_url, store) -> dict:
             "deal",
             {
                 "parties": {"buyer": buyer2["id"], "seller": seller["id"], "courier": None},
-                "item": {"title": "闲置机械键盘", "qty": 1},
-                "price": {"amount": "340", "currency": "CNY"},
+                "item": {"title": "Used mechanical keyboard", "qty": 1},
+                "price": {"amount": "75", "currency": "EUR"},
                 "based_on": [have["id"], bid2["id"], acc["id"]],
                 "match": {"mode": "one_to_one", "vertical": "goods_unique", "max_accepts": 1},
-                "terms": "一对多竞价后锁定一单",
+                "terms": "one of many bids locked",
             },
             thread=have["id"],
         )
@@ -138,7 +138,7 @@ def scenario_goods(board_url, store) -> dict:
         rev = env(
             buyer2,
             "review",
-            {"subject_id": seller["id"], "deal_id": deal["id"], "stars": 5, "text": "键盘不错"},
+            {"subject_id": seller["id"], "deal_id": deal["id"], "stars": 5, "text": "as described"},
         )
         post(board_url, store, rev)
         return {"vertical": "goods_unique", "mode": "one_to_many→1", "have": have["id"], "deal": deal["id"], "bids": 2}
@@ -147,7 +147,7 @@ def scenario_goods(board_url, store) -> dict:
 
 
 def scenario_food(board_url, store) -> dict:
-    """外卖：餐品 deal + 快递 broadcast_claim。"""
+    """Food: meal deal + courier offers, pick one."""
     tmp = Path(tempfile.mkdtemp(prefix="fm_food_"))
     try:
         shop = actor("shop", tmp, ["seller"])
@@ -158,9 +158,9 @@ def scenario_food(board_url, store) -> dict:
             eater,
             "want",
             {
-                "item": {"title": "黄焖鸡米饭 一份", "tags": ["food"]},
-                "budget": {"amount": "28", "currency": "CNY"},
-                "where": {"region": "上海-浦东"},
+                "item": {"title": "Veggie lunch bowl", "tags": ["food"]},
+                "budget": {"amount": "12", "currency": "EUR"},
+                "where": {"region": "Lisbon-Baixa"},
                 "need_courier": True,
                 "match": {
                     "mode": "one_to_many",
@@ -168,7 +168,7 @@ def scenario_food(board_url, store) -> dict:
                     "max_accepts": 1,
                     "exclusive": True,
                 },
-                "notes": "少辣",
+                "notes": "no nuts",
             },
         )
         post(board_url, store, want)
@@ -177,9 +177,9 @@ def scenario_food(board_url, store) -> dict:
             "bid",
             {
                 "target_id": want["id"],
-                "price": {"amount": "26", "currency": "CNY"},
+                "price": {"amount": "11", "currency": "EUR"},
                 "delivery": {"mode": "courier"},
-                "message": "25分钟出餐",
+                "message": "ready in 25m",
             },
             thread=want["id"],
             reply_to=want["id"],
@@ -192,8 +192,8 @@ def scenario_food(board_url, store) -> dict:
             "deal",
             {
                 "parties": {"buyer": eater["id"], "seller": shop["id"], "courier": None},
-                "item": {"title": "黄焖鸡米饭 一份"},
-                "price": {"amount": "26", "currency": "CNY"},
+                "item": {"title": "Veggie lunch bowl"},
+                "price": {"amount": "11", "currency": "EUR"},
                 "delivery": {"mode": "courier", "courier_fee": None},
                 "based_on": [want["id"], bid["id"], acc["id"]],
                 "match": {"mode": "one_to_one", "vertical": "food_order"},
@@ -206,7 +206,7 @@ def scenario_food(board_url, store) -> dict:
             "courier.offer",
             {
                 "target_id": meal["id"],
-                "fee": {"amount": "8", "currency": "CNY"},
+                "fee": {"amount": "3.5", "currency": "EUR"},
                 "eta": "20m",
                 "match": {"mode": "broadcast_claim", "vertical": "food_order", "max_accepts": 1},
             },
@@ -216,7 +216,7 @@ def scenario_food(board_url, store) -> dict:
             "courier.offer",
             {
                 "target_id": meal["id"],
-                "fee": {"amount": "6", "currency": "CNY"},
+                "fee": {"amount": "2.8", "currency": "EUR"},
                 "eta": "25m",
                 "match": {"mode": "broadcast_claim", "vertical": "food_order", "max_accepts": 1},
             },
@@ -225,7 +225,7 @@ def scenario_food(board_url, store) -> dict:
         post(board_url, store, offer_b)
         cacc = env(eater, "courier.accept", {"offer_id": offer_b["id"]}, reply_to=offer_b["id"])
         post(board_url, store, cacc)
-        ful = env(rider_b, "fulfill", {"deal_id": meal["id"], "event": "delivered", "note": "已送达"})
+        ful = env(rider_b, "fulfill", {"deal_id": meal["id"], "event": "delivered", "note": "delivered"})
         post(board_url, store, ful)
         conf = env(eater, "confirm", {"deal_id": meal["id"], "status": "complete"})
         post(board_url, store, conf)
@@ -235,7 +235,7 @@ def scenario_food(board_url, store) -> dict:
             "want": want["id"],
             "meal_deal": meal["id"],
             "courier_offers": 2,
-            "chosen_fee": "6",
+            "chosen_fee": "2.8",
         }
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
@@ -253,10 +253,10 @@ def scenario_geo(board_url, store) -> dict:
             shop_near,
             "have",
             {
-                "item": {"title": "黄焖鸡-近", "tags": ["food"]},
-                "price": {"amount": "26", "currency": "CNY"},
+                "item": {"title": "Bowl-near", "tags": ["food"]},
+                "price": {"amount": "11", "currency": "EUR"},
                 "where": {
-                    "region": "上海-浦东",
+                    "region": "Lisbon-Baixa",
                     "geo": {"lat": 31.235, "lon": 121.505, "radius_m": 3000},
                     "privacy": "public",
                 },
@@ -267,10 +267,10 @@ def scenario_geo(board_url, store) -> dict:
             shop_far,
             "have",
             {
-                "item": {"title": "黄焖鸡-远", "tags": ["food"]},
-                "price": {"amount": "22", "currency": "CNY"},
+                "item": {"title": "Bowl-far", "tags": ["food"]},
+                "price": {"amount": "9", "currency": "EUR"},
                 "where": {
-                    "region": "上海-松江",
+                    "region": "Setubal",
                     "geo": {"lat": 31.032, "lon": 121.227, "radius_m": 5000},
                     "privacy": "public",
                 },
@@ -299,14 +299,14 @@ def scenario_geo(board_url, store) -> dict:
                     "near_lon": origin[1],
                     "radius_m": 50000,
                     "sort": "distance",
-                    "q": "黄焖鸡",
+                    "q": "Bowl",
                 }
             ),
         )
         msgs = rows.get("messages") or []
-        geo_msgs = [m for m in msgs if m.get("title") in ("黄焖鸡-近", "黄焖鸡-远")]
+        geo_msgs = [m for m in msgs if m.get("title") in ("Bowl-near", "Bowl-far")]
         assert len(geo_msgs) >= 2, rows
-        assert geo_msgs[0]["title"] == "黄焖鸡-近", geo_msgs
+        assert geo_msgs[0]["title"] == "Bowl-near", geo_msgs
         assert geo_msgs[0]["distance_m"] < geo_msgs[1]["distance_m"], geo_msgs
         # radius filter excludes far if tight
         tight = http_json(
@@ -321,13 +321,13 @@ def scenario_geo(board_url, store) -> dict:
                     "near_lon": origin[1],
                     "radius_m": 3000,
                     "sort": "distance",
-                    "q": "黄焖鸡",
+                    "q": "Bowl",
                 }
             ),
         )
         titles = {m.get("title") for m in (tight.get("messages") or [])}
-        assert "黄焖鸡-近" in titles
-        assert "黄焖鸡-远" not in titles
+        assert "Bowl-near" in titles
+        assert "Bowl-far" not in titles
         return {
             "vertical": "geo",
             "shop_distance_m": dist["distance_m"],
@@ -339,7 +339,7 @@ def scenario_geo(board_url, store) -> dict:
 
 
 def scenario_ride(board_url, store) -> dict:
-    """打车：1 want → N driver offers → passenger accept one (many_to_one / broadcast_claim)."""
+    """Ride: 1 want → N driver offers → passenger picks one."""
     tmp = Path(tempfile.mkdtemp(prefix="fm_ride_"))
     try:
         pax = actor("pax", tmp, ["buyer"])
@@ -350,12 +350,12 @@ def scenario_ride(board_url, store) -> dict:
             "want",
             {
                 "item": {
-                    "title": "打车 陆家嘴 → 虹桥火车站",
-                    "description": "现在出发，可带行李",
+                    "title": "Ride Brooklyn → JFK",
+                    "description": "2 bags · flexible 10min",
                     "tags": ["ride"],
                 },
-                "budget": {"amount": "80", "currency": "CNY"},
-                "where": {"region": "上海", "label": "陆家嘴→虹桥"},
+                "budget": {"amount": "55", "currency": "USD"},
+                "where": {"region": "New York", "label": "Brooklyn → JFK"},
                 "need_courier": True,
                 "match": {
                     "mode": "one_to_many",
@@ -371,9 +371,9 @@ def scenario_ride(board_url, store) -> dict:
             "courier.offer",
             {
                 "target_id": want["id"],
-                "fee": {"amount": "75", "currency": "CNY"},
+                "fee": {"amount": "48", "currency": "USD"},
                 "eta": "3min",
-                "vehicle": "网约车-蓝",
+                "vehicle": "sedan-blue",
                 "match": {"mode": "one_to_many", "vertical": "ride"},
             },
             thread=want["id"],
@@ -383,24 +383,24 @@ def scenario_ride(board_url, store) -> dict:
             "courier.offer",
             {
                 "target_id": want["id"],
-                "fee": {"amount": "70", "currency": "CNY"},
+                "fee": {"amount": "45", "currency": "USD"},
                 "eta": "6min",
-                "vehicle": "网约车-白",
+                "vehicle": "sedan-white",
                 "match": {"mode": "one_to_many", "vertical": "ride"},
             },
             thread=want["id"],
         )
         post(board_url, store, o1)
         post(board_url, store, o2)
-        acc = env(pax, "courier.accept", {"offer_id": o1["id"], "message": "选最近"}, thread=want["id"])
+        acc = env(pax, "courier.accept", {"offer_id": o1["id"], "message": "nearest"}, thread=want["id"])
         post(board_url, store, acc)
         deal = env(
             pax,
             "deal",
             {
                 "parties": {"buyer": pax["id"], "seller": drv1["id"], "courier": drv1["id"]},
-                "item": {"title": "打车 陆家嘴 → 虹桥火车站"},
-                "price": {"amount": "75", "currency": "CNY"},
+                "item": {"title": "Ride Brooklyn → JFK"},
+                "price": {"amount": "48", "currency": "USD"},
                 "based_on": [want["id"], o1["id"], acc["id"]],
                 "match": {"mode": "one_to_one", "vertical": "ride"},
                 "delivery": {"mode": "courier"},
@@ -414,7 +414,7 @@ def scenario_ride(board_url, store) -> dict:
         post(
             board_url,
             store,
-            env(pax, "review", {"subject_id": drv1["id"], "deal_id": deal["id"], "stars": 5, "text": "准时"}),
+            env(pax, "review", {"subject_id": drv1["id"], "deal_id": deal["id"], "stars": 5, "text": "on time"}),
         )
         return {"vertical": "ride", "mode": "one_to_many offers → passenger picks 1", "want": want["id"], "deal": deal["id"]}
     finally:

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-07-25T06:23:44Z",
+  "generated_at": "2026-07-25T08:31:11Z",
   "purpose": "Public gallery demo — fictional peers, global sample cities",
   "health": {
     "ok": true,
     "service": "free-match-board",
     "v": 1,
-    "started_at": "2026-07-25T06:23:43Z",
+    "started_at": "2026-07-25T08:31:11Z",
     "policy": {
       "platform_fee": false,
       "content_moderation": false,
@@ -25,15 +25,15 @@
         "courier.offer": 2,
         "want": 1
       },
-      "board": "D:\\Temp\\fm_demo_assets_cah0s15c"
+      "board": "D:\\Temp\\fm_demo_assets_uoshlop5"
     }
   },
   "messages": [
     {
       "v": 1,
-      "id": "fm19f97f1a572fac5dfd814",
+      "id": "fm19f98665785c4d7d3f004",
       "type": "have",
-      "ts": "2026-07-25T06:23:43Z",
+      "ts": "2026-07-25T08:31:11Z",
       "from": {
         "id": "demo_seller_eu",
         "display": "Mira",
@@ -74,9 +74,9 @@
     },
     {
       "v": 1,
-      "id": "fm19f97f1a574cd20401788",
+      "id": "fm19f986657937a23e94c75",
       "type": "bid",
-      "ts": "2026-07-25T06:23:43Z",
+      "ts": "2026-07-25T08:31:11Z",
       "from": {
         "id": "demo_buyer_eu",
         "display": "Sam",
@@ -85,7 +85,7 @@
         ]
       },
       "body": {
-        "target_id": "fm19f97f1a572fac5dfd814",
+        "target_id": "fm19f98665785c4d7d3f004",
         "price": {
           "amount": "70",
           "currency": "EUR"
@@ -96,14 +96,14 @@
         }
       },
       "sig": null,
-      "thread": "fm19f97f1a572fac5dfd814",
-      "reply_to": "fm19f97f1a572fac5dfd814"
+      "thread": "fm19f98665785c4d7d3f004",
+      "reply_to": "fm19f98665785c4d7d3f004"
     },
     {
       "v": 1,
-      "id": "fm19f97f1a576bf432e7d48",
+      "id": "fm19f98665795ea87620610",
       "type": "have",
-      "ts": "2026-07-25T06:23:43Z",
+      "ts": "2026-07-25T08:31:11Z",
       "from": {
         "id": "demo_kitchen",
         "display": "NoriBowl",
@@ -141,9 +141,9 @@
     },
     {
       "v": 1,
-      "id": "fm19f97f1a5781e46c420de",
+      "id": "fm19f986657a341246aac62",
       "type": "deal",
-      "ts": "2026-07-25T06:23:43Z",
+      "ts": "2026-07-25T08:31:11Z",
       "from": {
         "id": "demo_kitchen",
         "display": "NoriBowl",
@@ -168,7 +168,7 @@
           "mode": "courier"
         },
         "based_on": [
-          "fm19f97f1a576bf432e7d48"
+          "fm19f98665795ea87620610"
         ],
         "match": {
           "mode": "one_to_one",
@@ -176,13 +176,13 @@
         }
       },
       "sig": null,
-      "thread": "fm19f97f1a576bf432e7d48"
+      "thread": "fm19f98665795ea87620610"
     },
     {
       "v": 1,
-      "id": "fm19f97f1a57b531e911636",
+      "id": "fm19f986657b3154f63c888",
       "type": "courier.offer",
-      "ts": "2026-07-25T06:23:43Z",
+      "ts": "2026-07-25T08:31:11Z",
       "from": {
         "id": "demo_rider",
         "display": "Kai",
@@ -191,7 +191,7 @@
         ]
       },
       "body": {
-        "target_id": "fm19f97f1a5781e46c420de",
+        "target_id": "fm19f986657a341246aac62",
         "fee": {
           "amount": "3.5",
           "currency": "EUR"
@@ -214,9 +214,9 @@
     },
     {
       "v": 1,
-      "id": "fm19f97f1a57def6b3bcecf",
+      "id": "fm19f986657c20c6cfc8cba",
       "type": "want",
-      "ts": "2026-07-25T06:23:43Z",
+      "ts": "2026-07-25T08:31:11Z",
       "from": {
         "id": "demo_pax",
         "display": "Alex",
@@ -257,9 +257,9 @@
     },
     {
       "v": 1,
-      "id": "fm19f97f1a57f1e12578f01",
+      "id": "fm19f986657c4926eaf5d71",
       "type": "courier.offer",
-      "ts": "2026-07-25T06:23:43Z",
+      "ts": "2026-07-25T08:31:11Z",
       "from": {
         "id": "demo_driver",
         "display": "Riley",
@@ -268,7 +268,7 @@
         ]
       },
       "body": {
-        "target_id": "fm19f97f1a57def6b3bcecf",
+        "target_id": "fm19f986657c20c6cfc8cba",
         "fee": {
           "amount": "48",
           "currency": "USD"
@@ -288,13 +288,13 @@
         }
       },
       "sig": null,
-      "thread": "fm19f97f1a57def6b3bcecf"
+      "thread": "fm19f986657c20c6cfc8cba"
     }
   ],
   "nearby_from_berlin_sample": {
     "messages": [
       {
-        "id": "fm19f97f1a572fac5dfd814",
+        "id": "fm19f98665785c4d7d3f004",
         "type": "have",
         "from": "demo_seller_eu",
         "display": "Mira",
@@ -308,7 +308,7 @@
         "lon": 13.405,
         "distance_m": 0.0,
         "distance_text": "0 m",
-        "ts": "2026-07-25T06:23:43Z",
+        "ts": "2026-07-25T08:31:11Z",
         "thread": null,
         "ttl_sec": null,
         "match_mode": "one_to_many",
@@ -332,7 +332,7 @@
         }
       },
       {
-        "id": "fm19f97f1a576bf432e7d48",
+        "id": "fm19f98665795ea87620610",
         "type": "have",
         "from": "demo_kitchen",
         "display": "NoriBowl",
@@ -346,7 +346,7 @@
         "lon": -9.136,
         "distance_m": 2312965.6,
         "distance_text": "2313.0 km",
-        "ts": "2026-07-25T06:23:43Z",
+        "ts": "2026-07-25T08:31:11Z",
         "thread": null,
         "ttl_sec": null,
         "match_mode": "one_to_many",
@@ -368,7 +368,7 @@
         }
       },
       {
-        "id": "fm19f97f1a57b531e911636",
+        "id": "fm19f986657b3154f63c888",
         "type": "courier.offer",
         "from": "demo_rider",
         "display": "Kai",
@@ -382,7 +382,7 @@
         "lon": -9.14,
         "distance_m": 2313025.9,
         "distance_text": "2313.0 km",
-        "ts": "2026-07-25T06:23:43Z",
+        "ts": "2026-07-25T08:31:11Z",
         "thread": null,
         "ttl_sec": null,
         "match_mode": "one_to_many",
