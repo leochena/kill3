@@ -81,14 +81,18 @@ Convert user-stated terms to `have`/`want` — **do not scrape apps or reuse tra
 - [ ] No platform_fee / boost / kyc fields
 - [ ] Optional sig
 
-## Local board
+## Local board / daily ops
 
 ```bash
 python runtime/server.py --port 8787
-python runtime/fm.py --board http://127.0.0.1:8787 list --type want,have --sort distance
-python runtime/smoke_e2e.py
-python scripts/export_demo_assets.py
+python runtime/fm.py --board http://127.0.0.1:8787 search --nl "..." --near-lat … --near-lon …
+python runtime/fm.py --board http://127.0.0.1:8787 inbox
+python runtime/fm.py --board http://127.0.0.1:8787 track <id>
+python runtime/fm.py --board http://127.0.0.1:8787 watch --once
+python runtime/smoke_daily.py
 ```
+
+Full playbooks: repo `docs/daily-use.md`.
 
 ## References
 

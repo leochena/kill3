@@ -50,6 +50,16 @@ Full story: [docs/origin.md](docs/origin.md).
 
 ---
 
+## Daily use (all scenarios)
+
+Step-by-step playbooks for goods, food, ride, errand, service, RFQ:
+
+- **[docs/daily-use.md](docs/daily-use.md)**  
+- Acceptance gate: `python runtime/smoke_daily.py` · [docs/acceptance-daily.md](docs/acceptance-daily.md)  
+- Roadmaps: [docs/roadmaps/](docs/roadmaps/README.md)
+
+CLI highlights: `search --nl`, `inbox`, `track`, `watch`, `deal`, `fulfill`, `confirm`, `review`, `courier-offer`, `geocode`.
+
 ## 60-second try
 
 ```bash

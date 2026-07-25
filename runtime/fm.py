@@ -475,6 +475,347 @@ def cmd_accept(args: argparse.Namespace) -> int:
     return 0
 
 
+def _post_built(args: argparse.Namespace, msg: dict[str, Any]) -> int:
+    ident = load_identity(Path(args.ids_dir) if args.ids_dir else DEFAULT_IDS)
+    board = get_board(args)
+    if getattr(args, "sign", False):
+        if not ident:
+            print("cannot sign: no identity", file=sys.stderr)
+            return 1
+        msg = sign_message(msg, ident)
+    stored = board.put(msg, force=True)
+    emit(stored)
+    return 0
+
+
+def cmd_reject(args: argparse.Namespace) -> int:
+    ident = load_identity(Path(args.ids_dir) if args.ids_dir else DEFAULT_IDS)
+    if not ident:
+        print("run id new first", file=sys.stderr)
+        return 1
+    msg = {
+        "v": 1,
+        "type": "reject",
+        "from": {"id": ident["id"], "display": ident.get("display"), "roles": ["buyer", "seller"]},
+        "thread": args.thread or args.bid,
+        "reply_to": args.bid,
+        "body": {"bid_id": args.bid, "reason": args.reason},
+        "sig": None,
+    }
+    return _post_built(args, msg)
+
+
+def cmd_deal(args: argparse.Namespace) -> int:
+    ident = load_identity(Path(args.ids_dir) if args.ids_dir else DEFAULT_IDS)
+    if not ident:
+        print("run id new first", file=sys.stderr)
+        return 1
+    msg = {
+        "v": 1,
+        "type": "deal",
+        "from": {"id": ident["id"], "display": ident.get("display"), "roles": ["buyer", "seller"]},
+        "thread": args.thread,
+        "body": {
+            "parties": {
+                "buyer": args.buyer,
+                "seller": args.seller,
+                "courier": args.courier,
+            },
+            "item": {"title": args.title, "qty": args.qty, "description": args.desc},
+            "price": {"amount": str(args.price), "currency": args.currency},
+            "payment": {"methods": [args.pay], "timing": args.pay_timing} if args.pay else None,
+            "delivery": {"mode": args.delivery} if args.delivery else None,
+            "based_on": [x for x in (args.based_on or "").split(",") if x.strip()],
+            "terms": args.terms,
+            "match": {
+                "mode": args.mode or "one_to_one",
+                "vertical": args.vertical,
+                "max_accepts": 1,
+                "exclusive": True,
+            }
+            if args.vertical or args.mode
+            else None,
+        },
+        "sig": None,
+    }
+    # drop null match
+    if msg["body"].get("match") and not msg["body"]["match"].get("vertical") and not args.mode:
+        msg["body"]["match"] = None
+    return _post_built(args, msg)
+
+
+def cmd_fulfill(args: argparse.Namespace) -> int:
+    ident = load_identity(Path(args.ids_dir) if args.ids_dir else DEFAULT_IDS)
+    if not ident:
+        print("run id new first", file=sys.stderr)
+        return 1
+    msg = {
+        "v": 1,
+        "type": "fulfill",
+        "from": {"id": ident["id"], "display": ident.get("display"), "roles": ["seller", "courier"]},
+        "thread": args.thread or args.deal,
+        "body": {
+            "deal_id": args.deal,
+            "event": args.event,
+            "note": args.note,
+            "proof": [{"uri": u} for u in (args.proof or [])] or None,
+        },
+        "sig": None,
+    }
+    return _post_built(args, msg)
+
+
+def cmd_confirm(args: argparse.Namespace) -> int:
+    ident = load_identity(Path(args.ids_dir) if args.ids_dir else DEFAULT_IDS)
+    if not ident:
+        print("run id new first", file=sys.stderr)
+        return 1
+    msg = {
+        "v": 1,
+        "type": "confirm",
+        "from": {"id": ident["id"], "display": ident.get("display"), "roles": ["buyer", "seller"]},
+        "thread": args.thread or args.deal,
+        "body": {"deal_id": args.deal, "status": args.status, "note": args.note},
+        "sig": None,
+    }
+    return _post_built(args, msg)
+
+
+def cmd_review(args: argparse.Namespace) -> int:
+    ident = load_identity(Path(args.ids_dir) if args.ids_dir else DEFAULT_IDS)
+    if not ident:
+        print("run id new first", file=sys.stderr)
+        return 1
+    msg = {
+        "v": 1,
+        "type": "review",
+        "from": {"id": ident["id"], "display": ident.get("display"), "roles": ["buyer", "seller", "courier"]},
+        "body": {
+            "subject_id": args.subject,
+            "deal_id": args.deal,
+            "stars": args.stars,
+            "text": args.text,
+            "tags": [t.strip() for t in (args.tags or "").split(",") if t.strip()] or None,
+        },
+        "sig": None,
+    }
+    return _post_built(args, msg)
+
+
+def cmd_courier_offer(args: argparse.Namespace) -> int:
+    ident = load_identity(Path(args.ids_dir) if args.ids_dir else DEFAULT_IDS)
+    if not ident:
+        print("run id new first", file=sys.stderr)
+        return 1
+    msg = {
+        "v": 1,
+        "type": "courier.offer",
+        "from": {"id": ident["id"], "display": ident.get("display"), "roles": ["courier"]},
+        "thread": args.thread or args.target,
+        "body": {
+            "target_id": args.target,
+            "fee": {"amount": str(args.fee), "currency": args.currency},
+            "eta": args.eta,
+            "vehicle": args.vehicle,
+            "message": args.message,
+            "match": {
+                "mode": args.mode or "one_to_many",
+                "vertical": args.vertical or "errand",
+                "max_accepts": 1,
+            },
+            "where": {"geo": {"lat": args.lat, "lon": args.lon}, "region": args.region, "privacy": "public"}
+            if args.lat is not None and args.lon is not None
+            else ({"region": args.region, "privacy": "public"} if args.region else None),
+        },
+        "sig": None,
+    }
+    return _post_built(args, msg)
+
+
+def cmd_courier_accept(args: argparse.Namespace) -> int:
+    ident = load_identity(Path(args.ids_dir) if args.ids_dir else DEFAULT_IDS)
+    if not ident:
+        print("run id new first", file=sys.stderr)
+        return 1
+    msg = {
+        "v": 1,
+        "type": "courier.accept",
+        "from": {"id": ident["id"], "display": ident.get("display"), "roles": ["buyer", "seller"]},
+        "thread": args.thread,
+        "reply_to": args.offer,
+        "body": {"offer_id": args.offer, "message": args.message},
+        "sig": None,
+    }
+    return _post_built(args, msg)
+
+
+def cmd_inbox(args: argparse.Namespace) -> int:
+    """List open items relevant to me (daily operator view)."""
+    ident = load_identity(Path(args.ids_dir) if args.ids_dir else DEFAULT_IDS)
+    actor = args.actor or (ident or {}).get("id")
+    if not actor:
+        print("need identity or --actor", file=sys.stderr)
+        return 1
+    board = get_board(args)
+    if isinstance(board, RemoteBoard):
+        rows = board.query(types=None, q="", region="", summary=False, limit=500)
+        # remote summary=false still returns messages list via query - need full
+        # RemoteBoard.query with summary False still hits API summary flag - fix by list all types
+        all_types = "want,have,bid,accept,deal,fulfill,confirm,courier.offer,courier.accept,review"
+        rows = board.query(types=set(all_types.split(",")), summary=True, limit=500)
+        # for status we need threads - fetch deals/wants/haves and track
+        roots = [r for r in rows if r.get("type") in ("want", "have", "deal")]
+    else:
+        all_m = board.list_all()
+        roots = [m for m in all_m if m.get("type") in ("want", "have", "deal")]
+        rows = all_m
+
+    out = []
+    for r in roots:
+        rid = r.get("id")
+        # involve me?
+        fr = r.get("from") if isinstance(r.get("from"), dict) else {}
+        body = r.get("body") or {}
+        parties = body.get("parties") or {}
+        involved = (
+            fr.get("id") == actor
+            or parties.get("buyer") == actor
+            or parties.get("seller") == actor
+            or parties.get("courier") == actor
+            or r.get("from") == actor
+        )
+        if not involved and not args.all:
+            # also bids targeting my listings: skip heavy; include if --all
+            continue
+        if isinstance(board, RemoteBoard):
+            st = board._req("GET", f"/api/v1/track/{rid}").get("status") or {}
+        else:
+            st = derive_status(board.thread(rid))
+        status = st.get("status") or "unknown"
+        if not args.include_closed and status in ("completed", "cancelled", "complete"):
+            continue
+        out.append(
+            {
+                "id": rid,
+                "type": r.get("type"),
+                "title": (body.get("item") or {}).get("title") or r.get("title"),
+                "status": status,
+                "label": st.get("label"),
+                "from": fr.get("id") or r.get("from"),
+                "ts": r.get("ts") or st.get("last_ts"),
+            }
+        )
+    out.sort(key=lambda x: x.get("ts") or "", reverse=True)
+    emit({"actor": actor, "count": len(out), "items": out[: args.limit]})
+    return 0
+
+
+def cmd_watch(args: argparse.Namespace) -> int:
+    import time as _time
+
+    ident = load_identity(Path(args.ids_dir) if args.ids_dir else DEFAULT_IDS)
+    actor = args.actor or (ident or {}).get("id")
+    if not actor:
+        print("need identity or --actor", file=sys.stderr)
+        return 1
+    board = get_board(args)
+    last: dict[str, str] = {}
+    print(f"# watching actor={actor} interval={args.interval}s board={getattr(args,'board',None) or 'local'}", file=sys.stderr)
+    rounds = 0
+    while True:
+        # reuse inbox logic lightly
+        class NS:
+            pass
+
+        ns = argparse.Namespace(
+            board=getattr(args, "board", None),
+            board_dir=getattr(args, "board_dir", str(DEFAULT_BOARD)),
+            ids_dir=getattr(args, "ids_dir", str(DEFAULT_IDS)),
+            actor=actor,
+            all=False,
+            open_only=True,
+            limit=50,
+        )
+        # call internals
+        if isinstance(board, RemoteBoard):
+            all_types = "want,have,deal"
+            roots = board.query(types=set(all_types.split(",")), summary=True, limit=200)
+        else:
+            roots = [m for m in board.list_all() if m.get("type") in ("want", "have", "deal")]
+        changes = []
+        for r in roots:
+            rid = r.get("id")
+            fr = r.get("from") if isinstance(r.get("from"), dict) else {}
+            body = r.get("body") or {}
+            parties = body.get("parties") or {}
+            involved = fr.get("id") == actor or actor in (
+                parties.get("buyer"),
+                parties.get("seller"),
+                parties.get("courier"),
+            )
+            if not involved:
+                continue
+            if isinstance(board, RemoteBoard):
+                st = (board._req("GET", f"/api/v1/track/{rid}") or {}).get("status") or {}
+            else:
+                st = derive_status(board.thread(rid))
+            key = st.get("status") or "?"
+            if last.get(rid) != key:
+                if rid in last or args.include_initial:
+                    changes.append(
+                        {
+                            "id": rid,
+                            "from_status": last.get(rid),
+                            "to_status": key,
+                            "label": st.get("label"),
+                            "title": (body.get("item") or {}).get("title") or r.get("title"),
+                        }
+                    )
+                last[rid] = key
+        if changes:
+            emit({"ts": __import__("datetime").datetime.utcnow().isoformat() + "Z", "changes": changes})
+        rounds += 1
+        if args.once or (args.max_rounds and rounds >= args.max_rounds):
+            break
+        _time.sleep(max(2, args.interval))
+    return 0
+
+
+def cmd_geocode(args: argparse.Namespace) -> int:
+    import json as _json
+    import os
+    import urllib.parse
+    import urllib.request
+
+    base = args.nominatim or os.environ.get("FM_NOMINATIM_URL") or "https://nominatim.openstreetmap.org/search"
+    q = urllib.parse.urlencode({"q": args.query, "format": "json", "limit": str(args.limit)})
+    url = base.rstrip("/") + ("&" if "?" in base else "?") + q
+    # if base already is full search endpoint without query
+    if "nominatim" in base and "search" not in base:
+        url = base.rstrip("/") + "/search?" + urllib.parse.urlencode(
+            {"q": args.query, "format": "json", "limit": str(args.limit)}
+        )
+    req = urllib.request.Request(url, headers={"User-Agent": "free-match/0.2 (public-interest; local tool)"})
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            data = _json.loads(resp.read().decode("utf-8"))
+    except Exception as e:
+        print(json.dumps({"error": str(e), "hint": "set FM_NOMINATIM_URL to self-hosted Nominatim"}, ensure_ascii=False, indent=2))
+        return 1
+    out = [
+        {
+            "display": r.get("display_name"),
+            "lat": float(r["lat"]),
+            "lon": float(r["lon"]),
+            "type": r.get("type"),
+        }
+        for r in (data or [])
+        if r.get("lat") and r.get("lon")
+    ]
+    emit({"query": args.query, "results": out})
+    return 0
+
+
 def add_board_args(p: argparse.ArgumentParser) -> None:
     p.add_argument("--board", default=None, help="Remote board base URL, e.g. http://127.0.0.1:8787")
     p.add_argument("--board-dir", default=str(DEFAULT_BOARD), help="Local messages dir when not using --board")
@@ -632,6 +973,112 @@ def build_parser() -> argparse.ArgumentParser:
     a.add_argument("--message", default=None)
     a.add_argument("--sign", action="store_true")
     a.set_defaults(func=cmd_accept)
+
+    rj = sub.add_parser("reject")
+    add_board_args(rj)
+    rj.add_argument("--bid", required=True)
+    rj.add_argument("--thread", default=None)
+    rj.add_argument("--reason", default=None)
+    rj.add_argument("--sign", action="store_true")
+    rj.set_defaults(func=cmd_reject)
+
+    dl = sub.add_parser("deal", help="lock a deal snapshot")
+    add_board_args(dl)
+    dl.add_argument("--buyer", required=True)
+    dl.add_argument("--seller", required=True)
+    dl.add_argument("--courier", default=None)
+    dl.add_argument("--title", required=True)
+    dl.add_argument("--price", required=True)
+    dl.add_argument("--currency", default="EUR")
+    dl.add_argument("--qty", type=float, default=1)
+    dl.add_argument("--desc", default=None)
+    dl.add_argument("--thread", default=None)
+    dl.add_argument("--based-on", default="")
+    dl.add_argument("--delivery", default=None)
+    dl.add_argument("--pay", default=None)
+    dl.add_argument("--pay-timing", default="on_delivery")
+    dl.add_argument("--terms", default=None)
+    dl.add_argument("--vertical", default=None)
+    dl.add_argument("--mode", default="one_to_one")
+    dl.add_argument("--sign", action="store_true")
+    dl.set_defaults(func=cmd_deal)
+
+    fu = sub.add_parser("fulfill")
+    add_board_args(fu)
+    fu.add_argument("--deal", required=True)
+    fu.add_argument("--event", required=True, help="shipped|picked_up|in_transit|delivered|service_done|...")
+    fu.add_argument("--note", default=None)
+    fu.add_argument("--thread", default=None)
+    fu.add_argument("--proof", action="append", default=[])
+    fu.add_argument("--sign", action="store_true")
+    fu.set_defaults(func=cmd_fulfill)
+
+    cf = sub.add_parser("confirm")
+    add_board_args(cf)
+    cf.add_argument("--deal", required=True)
+    cf.add_argument("--status", required=True, choices=["received", "paid", "complete", "disputed", "cancelled"])
+    cf.add_argument("--note", default=None)
+    cf.add_argument("--thread", default=None)
+    cf.add_argument("--sign", action="store_true")
+    cf.set_defaults(func=cmd_confirm)
+
+    rv = sub.add_parser("review")
+    add_board_args(rv)
+    rv.add_argument("--subject", required=True)
+    rv.add_argument("--deal", required=True)
+    rv.add_argument("--stars", type=int, required=True)
+    rv.add_argument("--text", default=None)
+    rv.add_argument("--tags", default=None)
+    rv.add_argument("--sign", action="store_true")
+    rv.set_defaults(func=cmd_review)
+
+    co = sub.add_parser("courier-offer")
+    add_board_args(co)
+    co.add_argument("--target", required=True)
+    co.add_argument("--fee", required=True)
+    co.add_argument("--currency", default="EUR")
+    co.add_argument("--eta", default=None)
+    co.add_argument("--vehicle", default=None)
+    co.add_argument("--message", default=None)
+    co.add_argument("--thread", default=None)
+    co.add_argument("--vertical", default=None)
+    co.add_argument("--mode", default=None)
+    co.add_argument("--lat", type=float, default=None)
+    co.add_argument("--lon", type=float, default=None)
+    co.add_argument("--region", default=None)
+    co.add_argument("--sign", action="store_true")
+    co.set_defaults(func=cmd_courier_offer)
+
+    ca = sub.add_parser("courier-accept")
+    add_board_args(ca)
+    ca.add_argument("--offer", required=True)
+    ca.add_argument("--thread", default=None)
+    ca.add_argument("--message", default=None)
+    ca.add_argument("--sign", action="store_true")
+    ca.set_defaults(func=cmd_courier_accept)
+
+    ib = sub.add_parser("inbox", help="my open listings/deals with status")
+    add_board_args(ib)
+    ib.add_argument("--actor", default=None)
+    ib.add_argument("--all", action="store_true", help="all roots, not only mine")
+    ib.add_argument("--include-closed", action="store_true")
+    ib.add_argument("--limit", type=int, default=50)
+    ib.set_defaults(func=cmd_inbox)
+
+    wa = sub.add_parser("watch", help="poll status changes for my threads")
+    add_board_args(wa)
+    wa.add_argument("--actor", default=None)
+    wa.add_argument("--interval", type=int, default=15)
+    wa.add_argument("--once", action="store_true")
+    wa.add_argument("--max-rounds", type=int, default=0)
+    wa.add_argument("--include-initial", action="store_true")
+    wa.set_defaults(func=cmd_watch)
+
+    geo = sub.add_parser("geocode", help="free Nominatim geocode (respect usage policy / self-host)")
+    geo.add_argument("query")
+    geo.add_argument("--nominatim", default=None, help="override FM_NOMINATIM_URL")
+    geo.add_argument("--limit", type=int, default=5)
+    geo.set_defaults(func=cmd_geocode)
 
     return p
 

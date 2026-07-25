@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0 — 2026-07-25
+
+- Daily-use goal: full lifecycle CLI (deal/fulfill/confirm/review/courier/reject)
+- `inbox`, `watch`, `geocode` for operator loops
+- `smoke_daily.py` acceptance across goods/food/ride/errand/service/bulk_rfq
+- UI NL search box; docs/daily-use.md + acceptance-daily.md
+
 ## 0.2.0 — 2026-07-25
 
 - Origin story & clearer README (platform rent pain → agent peer match)

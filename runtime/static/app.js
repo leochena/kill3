@@ -489,6 +489,23 @@
     }
   }
 
+  async function nlSearch() {
+    const nl = ($("nlSearch")?.value || "").trim();
+    if (!nl) return;
+    // client-side lightweight parse mirroring server heuristics
+    const qMatch = nl.replace(/under\s+\d+.*/i, "").replace(/within\s+\d+.*/i, "").trim();
+    if (qMatch) $("filterQ").value = qMatch;
+    const m = nl.match(/within\s+(\d+(?:\.\d+)?)\s*(km|m)?/i);
+    if (m) {
+      const val = parseFloat(m[1]);
+      const unit = (m[2] || "km").toLowerCase();
+      $("filterRadius").value = String(unit === "m" ? val : val * 1000);
+    }
+    $("filterSort").value = "distance";
+    if (!state.me && parseNum("lat") == null) locateMe();
+    else refreshList();
+  }
+
   $("btnPost").onclick = postMessage;
   $("btnRefresh").onclick = refreshList;
   $("btnNear").onclick = () => {
@@ -504,6 +521,7 @@
   $("btnThread").onclick = loadThread;
   if ($("btnTrack")) $("btnTrack").onclick = loadTrack;
   if ($("btnUpload")) $("btnUpload").onclick = uploadSelectedFile;
+  if ($("btnNlSearch")) $("btnNlSearch").onclick = nlSearch;
   $("btnReviews").onclick = loadReviews;
   $("btnDist").onclick = distanceAB;
   $("vertical").addEventListener("change", () => {
