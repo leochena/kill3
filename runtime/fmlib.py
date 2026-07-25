@@ -320,12 +320,24 @@ def summarize_row(
     distance_m = None
     if origin and geo:
         distance_m = round(haversine_m(origin[0], origin[1], geo[0], geo[1]), 1)
+    attachments = item.get("attachments") if isinstance(item.get("attachments"), list) else []
+    images = [
+        a
+        for a in attachments
+        if isinstance(a, dict) and str(a.get("mime") or "").startswith("image/")
+    ]
+    thumb = None
+    if images:
+        thumb = images[0].get("uri")
+    elif attachments:
+        thumb = attachments[0].get("uri") if isinstance(attachments[0], dict) else None
     return {
         "id": m.get("id"),
         "type": m.get("type"),
         "from": (m.get("from") or {}).get("id"),
         "display": (m.get("from") or {}).get("display"),
         "title": item.get("title") or "",
+        "description": (item.get("description") or "")[:240] or None,
         "price": body.get("price") or body.get("budget") or body.get("fee"),
         "region": reg,
         "lat": geo[0] if geo else None,
@@ -337,11 +349,314 @@ def summarize_row(
         "ttl_sec": m.get("ttl_sec"),
         "match_mode": match.get("mode"),
         "vertical": match.get("vertical"),
+        "image_count": len(images) if images else len(attachments),
+        "thumb_uri": thumb,
+        "tags": item.get("tags") or [],
         "body": {
             "match": match,
             "where": where if isinstance(where, dict) else None,
+            "item": {
+                "title": item.get("title"),
+                "description": item.get("description"),
+                "tags": item.get("tags"),
+                "attachments": attachments,
+            }
+            if item
+            else None,
         },
     }
+
+
+def derive_status(messages: list[dict[str, Any]]) -> dict[str, Any]:
+    """Derive a human order status from a thread's messages (latest wins)."""
+    if not messages:
+        return {"status": "unknown", "label": "no messages", "timeline": []}
+    ordered = sorted(messages, key=lambda m: m.get("ts") or "")
+    timeline = [
+        {
+            "ts": m.get("ts"),
+            "type": m.get("type"),
+            "id": m.get("id"),
+            "from": (m.get("from") or {}).get("id"),
+            "summary": _timeline_summary(m),
+        }
+        for m in ordered
+    ]
+    types = [m.get("type") for m in ordered]
+    last_confirm = _last_body(ordered, "confirm")
+    last_fulfill = _last_body(ordered, "fulfill")
+    has_deal = "deal" in types
+    has_accept = "accept" in types or "courier.accept" in types
+    has_bid = "bid" in types or "courier.offer" in types
+    has_list = "want" in types or "have" in types
+
+    status = "listed"
+    label = "Listed"
+    if last_confirm:
+        st = (last_confirm.get("status") or "").lower()
+        status = st if st in ("complete", "cancelled", "disputed", "received", "paid") else "confirm"
+        label = f"Confirm:{st or '?'}"
+        if st == "complete":
+            label = "Completed"
+        elif st == "cancelled":
+            label = "Cancelled"
+        elif st == "disputed":
+            label = "Disputed"
+    elif last_fulfill:
+        ev = (last_fulfill.get("event") or "").lower()
+        status = "in_fulfillment"
+        label = f"Fulfill:{ev or '?'}"
+        if ev in ("delivered", "service_done"):
+            status = "delivered"
+            label = "Delivered / done"
+        elif ev in ("picked_up", "in_transit", "shipped"):
+            status = "in_fulfillment"
+    elif "courier.accept" in types and has_deal:
+        status = "courier_assigned"
+        label = "Courier assigned"
+    elif has_deal:
+        deal = _last_msg(ordered, "deal")
+        delivery = ((deal or {}).get("body") or {}).get("delivery") or {}
+        if (delivery.get("mode") or "") == "courier" and "courier.accept" not in types:
+            status = "awaiting_courier"
+            label = "Ordered — awaiting courier"
+        else:
+            status = "ordered"
+            label = "Ordered (deal)"
+    elif has_accept:
+        status = "accepted"
+        label = "Accepted — draft deal?"
+    elif has_bid:
+        status = "negotiating"
+        label = "Negotiating"
+    elif has_list:
+        status = "listed"
+        label = "Listed"
+
+    return {
+        "status": status,
+        "label": label,
+        "root_guess": ordered[0].get("id"),
+        "message_count": len(ordered),
+        "timeline": timeline,
+        "last_ts": ordered[-1].get("ts"),
+    }
+
+
+def _last_msg(ordered: list[dict[str, Any]], typ: str) -> dict[str, Any] | None:
+    for m in reversed(ordered):
+        if m.get("type") == typ:
+            return m
+    return None
+
+
+def _last_body(ordered: list[dict[str, Any]], typ: str) -> dict[str, Any] | None:
+    m = _last_msg(ordered, typ)
+    if not m:
+        return None
+    body = m.get("body")
+    return body if isinstance(body, dict) else None
+
+
+def _timeline_summary(m: dict[str, Any]) -> str:
+    t = m.get("type")
+    body = m.get("body") or {}
+    item = body.get("item") or {}
+    if t in ("want", "have"):
+        return f"{t}: {item.get('title') or ''}".strip()
+    if t == "bid":
+        p = body.get("price") or {}
+        return f"bid {p.get('amount')} {p.get('currency')}"
+    if t == "deal":
+        p = body.get("price") or {}
+        return f"deal {p.get('amount')} {p.get('currency')}"
+    if t == "fulfill":
+        return f"fulfill {body.get('event')}"
+    if t == "confirm":
+        return f"confirm {body.get('status')}"
+    if t == "courier.offer":
+        f = body.get("fee") or {}
+        return f"courier.offer {f.get('amount')} {f.get('currency')}"
+    if t == "review":
+        return f"review {body.get('stars')}★"
+    return str(t)
+
+
+def parse_buyer_nl(text: str) -> dict[str, Any]:
+    """Best-effort NL → filters for board query + agent ranking. Not ML — regex heuristics."""
+    import re
+
+    s = text.strip()
+    low = s.lower()
+    filters: dict[str, Any] = {
+        "raw": s,
+        "type": "have",
+        "q": None,
+        "max_price": None,
+        "currency": None,
+        "radius_m": None,
+        "vertical": None,
+        "need_courier": None,
+        "sort": "distance",
+        "tags": [],
+    }
+    # currency amounts
+    m = re.search(
+        r"(?:under|below|<=|max|budget(?:\s*(?:is|of)?)?|少于|不超过|预算)\s*(\d+(?:\.\d+)?)\s*(eur|euro|euros|usd|cny|rmb|¥|\$|€)?",
+        low,
+        re.I,
+    )
+    if not m:
+        m = re.search(r"(\d+(?:\.\d+)?)\s*(eur|euro|usd|cny|rmb)\b", low)
+    if m:
+        filters["max_price"] = float(m.group(1))
+        cur = (m.group(2) or "").lower()
+        if cur in ("€", "eur", "euro", "euros"):
+            filters["currency"] = "EUR"
+        elif cur in ("$", "usd"):
+            filters["currency"] = "USD"
+        elif cur in ("¥", "cny", "rmb"):
+            filters["currency"] = "CNY"
+        elif cur:
+            filters["currency"] = cur.upper()
+    # radius
+    m = re.search(r"within\s*(\d+(?:\.\d+)?)\s*(km|m|mi|miles)?", low)
+    if not m:
+        m = re.search(r"(\d+(?:\.\d+)?)\s*(km|kilometers)\s*(?:radius|away|near)?", low)
+    if not m:
+        m = re.search(r"(\d+(?:\.\d+)?)\s*公里", s)
+    if m:
+        val = float(m.group(1))
+        unit = (m.group(2) or "km").lower() if m.lastindex and m.lastindex >= 2 else "km"
+        if unit in ("m",):
+            filters["radius_m"] = val
+        elif unit in ("mi", "miles"):
+            filters["radius_m"] = val * 1609.34
+        else:
+            filters["radius_m"] = val * 1000
+    if "near me" in low or "附近" in s or "nearby" in low:
+        filters["radius_m"] = filters["radius_m"] or 3000
+        filters["sort"] = "distance"
+    # vertical hints
+    if any(w in low for w in ("vegan", "lunch", "dinner", "food", "meal", "外卖", "餐")):
+        filters["vertical"] = "food_order"
+    if any(w in low for w in ("ride", "taxi", "uber", "lift", "airport", "打车")):
+        filters["vertical"] = "ride"
+        filters["type"] = "want,courier.offer,have"
+    if any(w in low for w in ("errand", "delivery courier", "跑腿")):
+        filters["vertical"] = "errand"
+    if any(w in low for w in ("keyboard", "laptop", "phone", "bike", "furniture", "二手", "闲置")):
+        filters["vertical"] = filters["vertical"] or "goods_unique"
+    # tags / q
+    tag_words = [
+        "vegan",
+        "vegetarian",
+        "halal",
+        "spicy",
+        "gluten",
+        "organic",
+        "used",
+        "new",
+        "meetup",
+        "ship",
+    ]
+    for w in tag_words:
+        if w in low:
+            filters["tags"].append(w)
+    if any(w in low for w in ("deliver", "delivery", "送到", "配送")):
+        filters["need_courier"] = True
+    if any(w in low for w in ("pickup", "pick-up", "自取", "meetup only")):
+        filters["need_courier"] = False
+    # residual query: strip numbers and stopwords lightly
+    q = s
+    for w in ("find", "search", "show", "me", "please", "within", "under", "near", "nearby"):
+        q = re.sub(rf"\b{w}\b", " ", q, flags=re.I)
+    q = re.sub(r"\d+(?:\.\d+)?", " ", q)
+    q = re.sub(r"\s+", " ", q).strip()
+    filters["q"] = q or " ".join(filters["tags"]) or None
+    return filters
+
+
+def rank_listings(rows: list[dict[str, Any]], filters: dict[str, Any]) -> list[dict[str, Any]]:
+    """Attach transparent scores; sort best first."""
+    max_price = filters.get("max_price")
+    currency = (filters.get("currency") or "").upper() or None
+    tags = [t.lower() for t in (filters.get("tags") or [])]
+    radius = filters.get("radius_m")
+
+    scored = []
+    for r in rows:
+        price = r.get("price") or {}
+        amount = None
+        try:
+            if isinstance(price, dict) and price.get("amount") is not None:
+                amount = float(price["amount"])
+        except (TypeError, ValueError):
+            amount = None
+        cur = (price.get("currency") if isinstance(price, dict) else None) or ""
+        budget_fit = 1.0
+        if max_price is not None and amount is not None:
+            if currency and cur and cur.upper() != currency:
+                budget_fit = 0.4
+            elif amount <= max_price:
+                budget_fit = 1.0
+            elif amount <= max_price * 1.15:
+                budget_fit = 0.5
+            else:
+                budget_fit = 0.1
+        dist = r.get("distance_m")
+        if dist is None:
+            distance_fit = 0.5
+        elif radius and dist <= radius:
+            distance_fit = max(0.0, 1.0 - dist / float(radius))
+        elif radius:
+            distance_fit = 0.05
+        else:
+            distance_fit = 0.7
+        blob = f"{r.get('title') or ''} {r.get('description') or ''} {' '.join(r.get('tags') or [])}".lower()
+        if tags:
+            hits = sum(1 for t in tags if t in blob)
+            text_fit = hits / len(tags)
+        else:
+            text_fit = 0.5
+        # reputation unknown in row → 0.3 neutral
+        rep = 0.3
+        score = 0.35 * budget_fit + 0.30 * distance_fit + 0.20 * text_fit + 0.15 * rep
+        rr = dict(r)
+        rr["score"] = round(score, 4)
+        rr["score_parts"] = {
+            "budget_fit": round(budget_fit, 3),
+            "distance_fit": round(distance_fit, 3),
+            "text_tag_overlap": round(text_fit, 3),
+            "reputation_hint": rep,
+        }
+        scored.append(rr)
+    scored.sort(key=lambda x: (-x["score"], x.get("distance_m") is None, x.get("distance_m") or 0))
+    return scored
+
+
+def attachment_list_from_uris(uris: list[str] | None) -> list[dict[str, Any]] | None:
+    if not uris:
+        return None
+    out = []
+    for u in uris:
+        u = (u or "").strip()
+        if not u:
+            continue
+        mime = None
+        low = u.lower()
+        if low.endswith((".jpg", ".jpeg")):
+            mime = "image/jpeg"
+        elif low.endswith(".png"):
+            mime = "image/png"
+        elif low.endswith(".webp"):
+            mime = "image/webp"
+        elif low.endswith(".gif"):
+            mime = "image/gif"
+        elif low.endswith(".pdf"):
+            mime = "application/pdf"
+        out.append({"uri": u, "mime": mime, "sha256": None})
+    return out or None
 
 
 def match_filters(
@@ -596,7 +911,19 @@ def build_have(
     radius_m: float | None = None,
     label: str | None = None,
     privacy: str = "after_deal",
+    tags: list[str] | None = None,
+    image_uris: list[str] | None = None,
 ) -> dict[str, Any]:
+    item: dict[str, Any] = {
+        "title": title,
+        "description": desc,
+        "condition": condition,
+    }
+    if tags:
+        item["tags"] = tags
+    atts = attachment_list_from_uris(image_uris)
+    if atts:
+        item["attachments"] = atts
     return {
         "v": 1,
         "id": new_id(),
@@ -605,7 +932,7 @@ def build_have(
         "from": {"id": identity["id"], "display": identity.get("display"), "roles": ["seller"]},
         "ttl_sec": ttl,
         "body": {
-            "item": {"title": title, "description": desc, "condition": condition},
+            "item": item,
             "price": {"amount": str(price), "currency": currency} if price is not None else None,
             "where": build_place(region, lat, lon, radius_m, label, privacy),
             "stock": stock,

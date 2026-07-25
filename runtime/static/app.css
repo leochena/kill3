@@ -112,7 +112,17 @@ button:hover { filter: brightness(1.08); }
   color: var(--accent2);
   margin-right: 0.35rem;
 }
-.badge.dist { color: #041210; background: var(--accent); font-weight: 600; }
+.thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  margin-right: 0.55rem;
+  flex-shrink: 0;
+  background: #0a0e14;
+}
+.rowish { display: flex; align-items: flex-start; gap: 0.2rem; }
 .map {
   height: 360px;
   border-radius: 12px;

@@ -99,12 +99,21 @@
         <button type="button" id="btnMapPick">地图选点</button>
         <span class="hint" id="locStatus">未定位</span>
       </div>
-      <label class="block">备注
-        <textarea id="notes" rows="2" placeholder="交付方式、门牌（可成交后再给）等"></textarea>
+      <label class="block">Notes / description (buyers see this)
+        <textarea id="notes" rows="2" placeholder="Item details, allergens, meetup window…"></textarea>
       </label>
+      <label class="block">Image URLs (one per line) — buyers see gallery
+        <textarea id="imageUris" rows="2" placeholder="https://…/photo.jpg or upload below"></textarea>
+      </label>
+      <div class="row">
+        <label>Upload image
+          <input id="imageFile" type="file" accept="image/*" />
+        </label>
+        <button type="button" id="btnUpload">Upload to board /media</button>
+      </div>
       <div class="actions">
-        <button id="btnPost" class="primary">发布到板</button>
-        <button id="btnRefresh">刷新列表</button>
+        <button id="btnPost" class="primary">Publish</button>
+        <button id="btnRefresh">Refresh list</button>
       </div>
       <pre id="postResult" class="log"></pre>
     </section>
@@ -153,8 +162,9 @@
         <label class="grow">消息 B（比距离）
           <input id="distOtherId" placeholder="另一条消息 id" />
         </label>
-        <button id="btnThread">看线程</button>
-        <button id="btnDist">算 A↔B 距离</button>
+        <button id="btnThread">Thread</button>
+        <button id="btnTrack">Order status</button>
+        <button id="btnDist">Distance A↔B</button>
         <label class="grow">Actor
           <input id="reviewActor" placeholder="评价对象" />
         </label>

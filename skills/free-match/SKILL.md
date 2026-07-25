@@ -53,13 +53,20 @@ announce? → want|have → bid ↔ reject → accept → deal
 ## Agent playbooks
 
 ### A. Buy
-Clarify item, budget, region/geo, delivery; post `want`; compare price + distance + reviews; bid/accept; deal; confirm; review.
+Clarify item, budget, region/geo, delivery.
+Use NL search playbook (`references/buyer-nl.md`): parse filters → board search → table with distance, tags, **image_count**, description.
+Bid/accept; deal; `track` status; confirm; review.
 
 ### B. Sell
-Post `have` with stock/geo; answer wants; deal; fulfill; review.
+Write **description + photos** (`references/merchant-media.md`).
+Post `have` with `attachments`; answer wants; deal; fulfill; review.
+Show merchant a buyer-facing preview before publish.
 
 ### C. Courier / driver
 Scan needs; `courier.offer` with fee+ETA+geo; on accept, fulfill events; review.
+
+### D. Track / remind
+`fm track <id>` or API `/api/v1/track/{id}`; schedule host-side reminders (`references/order-tracking.md`).
 
 ### D. Leave a closed intermediary
 Convert user-stated terms to `have`/`want` — **do not scrape apps or reuse trademarks**. Multi-channel discovery; user remains responsible for law and their other contracts.
@@ -87,10 +94,13 @@ python scripts/export_demo_assets.py
 
 - `references/protocol-summary.md`
 - `references/match-modes.md`
+- `references/buyer-nl.md` — natural-language buyer search
+- `references/merchant-media.md` — photos & descriptions
+- `references/order-tracking.md` — status + reminders
 - `references/matching.md`
 - `references/roles.md`
 - `references/discovery.md`
-- Repo `docs/*`, `assets/` showcase
+- Repo `docs/origin.md`, `docs/roadmaps/`, `assets/`
 
 ## Install
 

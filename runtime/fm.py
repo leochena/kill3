@@ -23,9 +23,12 @@ from fmlib import (  # noqa: E402
     build_have,
     build_want,
     create_identity,
+    derive_status,
     load_identity,
     load_json,
+    parse_buyer_nl,
     public_identity,
+    rank_listings,
     review_summary,
     sign_message,
     validate_envelope,
@@ -262,6 +265,65 @@ def cmd_distance(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_thread(args: argparse.Namespace) -> int:
+    board = get_board(args)
+    if isinstance(board, RemoteBoard):
+        msgs = board.thread(args.root_id)
+    else:
+        msgs = board.thread(args.root_id)
+    emit(msgs)
+    return 0
+
+
+def cmd_review_summary(args: argparse.Namespace) -> int:
+    board = get_board(args)
+    if isinstance(board, RemoteBoard):
+        emit(board.reviews(args.actor_id))
+        return 0
+    emit(review_summary(board.list_all(), args.actor_id))
+    return 0
+
+
+def cmd_track(args: argparse.Namespace) -> int:
+    board = get_board(args)
+    if isinstance(board, RemoteBoard):
+        res = board._req("GET", f"/api/v1/track/{args.root_id}")
+        emit(res.get("status") if args.status_only else res)
+        return 0
+    msgs = board.thread(args.root_id)
+    st = derive_status(msgs)
+    if args.status_only:
+        emit(st)
+    else:
+        emit({"root": args.root_id, "status": st, "messages": msgs})
+    return 0
+
+
+def cmd_search(args: argparse.Namespace) -> int:
+    filters = parse_buyer_nl(args.nl)
+    board = get_board(args)
+    types = {t.strip() for t in str(filters.get("type") or "have").split(",") if t.strip()}
+    radius = args.radius_m if args.radius_m is not None else filters.get("radius_m")
+    kwargs = dict(
+        types=types,
+        q=filters.get("q") or "",
+        region=args.region or "",
+        summary=True,
+        near_lat=args.near_lat,
+        near_lon=args.near_lon,
+        radius_m=radius,
+        require_geo=False,
+        sort="distance" if args.near_lat is not None else "time",
+    )
+    if isinstance(board, RemoteBoard):
+        rows = board.query(**kwargs)
+    else:
+        rows = board.query(**kwargs)
+    ranked = rank_listings(rows, filters)
+    emit({"filters": filters, "count": len(ranked), "results": ranked[: args.limit]})
+    return 0
+
+
 def cmd_want(args: argparse.Namespace) -> int:
     ident = load_identity(Path(args.ids_dir) if args.ids_dir else DEFAULT_IDS)
     if not ident:
@@ -303,6 +365,34 @@ def cmd_have(args: argparse.Namespace) -> int:
     if not ident:
         print("run: python runtime/fm.py id new --name <handle>", file=sys.stderr)
         return 1
+    images = []
+    if args.image:
+        images.extend(args.image)
+    if args.image_uri:
+        images.extend(args.image_uri)
+    # upload local files to remote board media if --board set
+    resolved = []
+    board = get_board(args)
+    for img in images:
+        p = Path(img)
+        if p.is_file() and isinstance(board, RemoteBoard):
+            import base64
+            import mimetypes
+
+            raw = p.read_bytes()
+            mime = mimetypes.guess_type(p.name)[0] or "application/octet-stream"
+            res = board._req(
+                "POST",
+                "/api/v1/media",
+                {
+                    "filename": p.name,
+                    "mime": mime,
+                    "content_base64": base64.b64encode(raw).decode("ascii"),
+                },
+            )
+            resolved.append(res.get("uri") or img)
+        else:
+            resolved.append(img)
     msg = build_have(
         ident,
         title=args.title,
@@ -319,11 +409,12 @@ def cmd_have(args: argparse.Namespace) -> int:
         radius_m=args.place_radius,
         label=args.label,
         privacy=args.privacy,
+        tags=[t.strip() for t in (args.tags or "").split(",") if t.strip()] or None,
+        image_uris=resolved or None,
     )
     msg["body"] = attach_match(msg["body"], args.vertical, args.mode, args.max_accepts)
     if args.sign:
         msg = sign_message(msg, ident)
-    board = get_board(args)
     if isinstance(board, RemoteBoard):
         stored = board.put(msg, force=True)
         emit(stored)
@@ -458,6 +549,22 @@ def build_parser() -> argparse.ArgumentParser:
     rs.add_argument("actor_id")
     rs.set_defaults(func=cmd_review_summary)
 
+    tr = sub.add_parser("track", help="order/thread status timeline")
+    add_board_args(tr)
+    tr.add_argument("root_id")
+    tr.add_argument("--status-only", action="store_true")
+    tr.set_defaults(func=cmd_track)
+
+    se = sub.add_parser("search", help="buyer NL → filters + ranked listings")
+    add_board_args(se)
+    se.add_argument("--nl", required=True, help='e.g. "vegan lunch under 12 EUR within 2 km"')
+    se.add_argument("--near-lat", type=float, default=None)
+    se.add_argument("--near-lon", type=float, default=None)
+    se.add_argument("--radius-m", type=float, default=None)
+    se.add_argument("--region", default="")
+    se.add_argument("--limit", type=int, default=20)
+    se.set_defaults(func=cmd_search)
+
     w = sub.add_parser("want")
     add_board_args(w)
     w.add_argument("--title", required=True)
@@ -500,6 +607,9 @@ def build_parser() -> argparse.ArgumentParser:
     h.add_argument("--vertical", default=None)
     h.add_argument("--mode", default=None)
     h.add_argument("--max-accepts", type=int, default=None)
+    h.add_argument("--tags", default=None, help="comma tags e.g. vegan,lunch")
+    h.add_argument("--image", action="append", default=[], help="local image path (upload if --board)")
+    h.add_argument("--image-uri", action="append", default=[], help="existing image URL")
     h.add_argument("--sign", action="store_true")
     h.set_defaults(func=cmd_have)
 

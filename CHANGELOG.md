@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0 — 2026-07-25
+
+- Origin story & clearer README (platform rent pain → agent peer match)
+- Merchant media: `/api/v1/media`, attachments on listings, UI gallery/upload
+- Buyer NL: `fm search --nl`, parse + transparent rank
+- Order track: `derive_status`, `fm track`, `/api/v1/track/{id}`, UI status
+- Free maps doc + `FM_TILE_URL` / config endpoint
+- Per-scenario roadmaps under `docs/roadmaps/`
+- Skill refs: buyer-nl, merchant-media, order-tracking
+
 ## 0.1.4 — 2026-07-25
 
 - Global public-interest docs rewrite (README, legal, philosophy, contributing)

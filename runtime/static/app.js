@@ -8,6 +8,8 @@
     meMarker: null,
     layer: null,
     messages: [],
+    config: null,
+    pendingImages: [],
   };
 
   function randId(prefix) {
@@ -77,20 +79,19 @@
   }
 
   function initMap() {
-    state.map = L.map("map").setView([31.2304, 121.4737], 11);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution: "&copy; OpenStreetMap",
-    }).addTo(state.map);
+    const tileUrl = state.config?.tile_url || "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+    const attr = state.config?.tile_attribution || "&copy; OpenStreetMap";
+    state.map = L.map("map").setView([52.52, 13.405], 11);
+    L.tileLayer(tileUrl, { maxZoom: 19, attribution: attr }).addTo(state.map);
     state.layer = L.layerGroup().addTo(state.map);
     state.map.on("click", (e) => {
       if (!state.pickMode) return;
       state.me = { lat: +e.latlng.lat.toFixed(6), lon: +e.latlng.lng.toFixed(6) };
       applyMeToForm();
       updateMeMarker();
-      setLocStatus(`地图选点 ${state.me.lat}, ${state.me.lon}`);
+      setLocStatus(`Map pick ${state.me.lat}, ${state.me.lon}`);
       state.pickMode = false;
-      $("btnMapPick").textContent = "地图选点";
+      $("btnMapPick").textContent = "Map pick";
     });
   }
 
@@ -143,6 +144,16 @@
     return { amount: String(amount), currency: currency || "CNY" };
   }
 
+  function guessMime(uri) {
+    const u = uri.toLowerCase();
+    if (u.endsWith(".png")) return "image/png";
+    if (u.endsWith(".webp")) return "image/webp";
+    if (u.endsWith(".gif")) return "image/gif";
+    if (u.endsWith(".pdf")) return "application/pdf";
+    if (u.endsWith(".jpg") || u.endsWith(".jpeg")) return "image/jpeg";
+    return "image/jpeg";
+  }
+
   function parseNum(id) {
     const v = $(id).value.trim();
     if (!v) return null;
@@ -178,6 +189,16 @@
     const needCourier = $("needCourier").checked;
     const match = matchBlock();
     const where = buildWhere();
+    const imageUris = ($("imageUris")?.value || "")
+      .split(/\n|,/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .concat(state.pendingImages || []);
+    const attachments = imageUris.map((uri) => ({
+      uri,
+      mime: guessMime(uri),
+      sha256: null,
+    }));
     const base = {
       v: 1,
       id: randId("fm"),
@@ -189,14 +210,20 @@
       },
       sig: null,
     };
-    if (!title && role !== "courier") throw new Error("请填写标题");
+    if (!title && role !== "courier") throw new Error("Please fill title");
     if (role === "buyer") {
       return {
         ...base,
         type: "want",
         ttl_sec: 172800,
         body: {
-          item: { title, qty: 1, tags: [match.vertical] },
+          item: {
+            title,
+            qty: 1,
+            tags: [match.vertical],
+            description: notes,
+            attachments: attachments.length ? attachments : undefined,
+          },
           budget: money(amount, currency),
           where,
           need_courier: needCourier || match.vertical === "ride" || match.vertical === "food_order",
@@ -211,7 +238,13 @@
         type: "have",
         ttl_sec: 604800,
         body: {
-          item: { title, condition: "used", tags: [match.vertical] },
+          item: {
+            title,
+            condition: "used",
+            tags: [match.vertical],
+            description: notes,
+            attachments: attachments.length ? attachments : undefined,
+          },
           price: money(amount, currency),
           where,
           stock: match.vertical === "goods_stock" ? 10 : 1,
@@ -275,10 +308,17 @@
       const distBadge = m.distance_text
         ? `<span class="badge dist">${escapeHtml(m.distance_text)}</span>`
         : m.lat != null
-          ? `<span class="badge">有坐标</span>`
+          ? `<span class="badge">geo</span>`
           : "";
-      el.innerHTML = `<div class="t"><span class="badge">${escapeHtml(m.type)}</span>${distBadge}${modeBadge}${vertBadge}${escapeHtml(String(title))}</div>
-        <div class="s">${escapeHtml(String(priceText))} · ${escapeHtml(String(region || "未填地区"))} · ${escapeHtml(String(from))} · <code>${escapeHtml(m.id)}</code></div>`;
+      const imgBadge =
+        m.image_count > 0 ? `<span class="badge">${m.image_count} img</span>` : "";
+      const thumb =
+        m.thumb_uri && String(m.thumb_uri).match(/\.(png|jpe?g|webp|gif)(\?|$)/i)
+          ? `<img class="thumb" src="${escapeHtml(m.thumb_uri)}" alt="" />`
+          : "";
+      el.innerHTML = `<div class="rowish">${thumb}<div><div class="t"><span class="badge">${escapeHtml(m.type)}</span>${distBadge}${imgBadge}${modeBadge}${vertBadge}${escapeHtml(String(title))}</div>
+        <div class="s">${escapeHtml(String(priceText))} · ${escapeHtml(String(region || "no region"))} · ${escapeHtml(String(from))} · <code>${escapeHtml(m.id)}</code></div>
+        <div class="s">${escapeHtml(String(m.description || "").slice(0, 120))}</div></div></div>`;
       el.onclick = () => {
         $("threadId").value = m.id;
         $("reviewActor").value = typeof m.from === "string" ? m.from : m.from?.id || "";
@@ -359,9 +399,65 @@
     if (!id) return;
     try {
       const data = await api("/api/v1/thread/" + encodeURIComponent(id));
+      const st = data.status ? `\nSTATUS: ${data.status.label} (${data.status.status})\n` : "";
+      $("threadView").textContent = st + JSON.stringify(data, null, 2);
+    } catch (e) {
+      $("threadView").textContent = JSON.stringify(e.data || { error: e.message }, null, 2);
+    }
+  }
+
+  async function loadTrack() {
+    const id = $("threadId").value.trim();
+    if (!id) return;
+    try {
+      const data = await api("/api/v1/track/" + encodeURIComponent(id));
       $("threadView").textContent = JSON.stringify(data, null, 2);
     } catch (e) {
       $("threadView").textContent = JSON.stringify(e.data || { error: e.message }, null, 2);
+    }
+  }
+
+  async function uploadSelectedFile() {
+    const input = $("imageFile");
+    if (!input?.files?.length) {
+      setLocStatus("Choose a file first");
+      return;
+    }
+    const file = input.files[0];
+    const buf = await file.arrayBuffer();
+    let binary = "";
+    const bytes = new Uint8Array(buf);
+    const chunk = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunk) {
+      binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+    }
+    const b64 = btoa(binary);
+    try {
+      const data = await api("/api/v1/media", {
+        method: "POST",
+        body: JSON.stringify({
+          filename: file.name,
+          mime: file.type || "application/octet-stream",
+          content_base64: b64,
+        }),
+      });
+      state.pendingImages.push(data.uri);
+      const cur = $("imageUris").value.trim();
+      $("imageUris").value = cur ? cur + "\n" + data.uri : data.uri;
+      setLocStatus("Uploaded " + data.uri);
+    } catch (e) {
+      setLocStatus("Upload failed: " + e.message);
+    }
+  }
+
+  async function refreshHealth() {
+    try {
+      const h = await api("/health");
+      state.config = h.maps || state.config;
+      $("healthMeta").textContent =
+        `OK · msg=${h.stats?.count ?? "?"} · fee=${h.policy?.platform_fee} · boost=${h.policy?.paid_boost} · geo=haversine`;
+    } catch (e) {
+      $("healthMeta").textContent = "Board offline: " + e.message;
     }
   }
 
@@ -380,7 +476,7 @@
     const a = $("threadId").value.trim();
     const b = $("distOtherId").value.trim();
     if (!a || !b) {
-      $("threadView").textContent = "需要消息 A 与 B 的 id";
+      $("threadView").textContent = "Need message A and B ids";
       return;
     }
     try {
@@ -393,16 +489,6 @@
     }
   }
 
-  async function refreshHealth() {
-    try {
-      const h = await api("/health");
-      $("healthMeta").textContent =
-        `OK · msg=${h.stats?.count ?? "?"} · fee=${h.policy?.platform_fee} · geo=haversine`;
-    } catch (e) {
-      $("healthMeta").textContent = "板子未连接: " + e.message;
-    }
-  }
-
   $("btnPost").onclick = postMessage;
   $("btnRefresh").onclick = refreshList;
   $("btnNear").onclick = () => {
@@ -412,10 +498,12 @@
   $("btnLocate").onclick = locateMe;
   $("btnMapPick").onclick = () => {
     state.pickMode = !state.pickMode;
-    $("btnMapPick").textContent = state.pickMode ? "点击地图…(再点取消)" : "地图选点";
-    setLocStatus(state.pickMode ? "在地图上点一下设为坐标" : "已取消选点");
+    $("btnMapPick").textContent = state.pickMode ? "Click map…(again to cancel)" : "Map pick";
+    setLocStatus(state.pickMode ? "Click the map to set coordinates" : "Pick cancelled");
   };
   $("btnThread").onclick = loadThread;
+  if ($("btnTrack")) $("btnTrack").onclick = loadTrack;
+  if ($("btnUpload")) $("btnUpload").onclick = uploadSelectedFile;
   $("btnReviews").onclick = loadReviews;
   $("btnDist").onclick = distanceAB;
   $("vertical").addEventListener("change", () => {
@@ -434,8 +522,15 @@
   $("onlyGeo").addEventListener("change", refreshList);
 
   ensureActor();
-  initMap();
-  refreshHealth();
-  refreshList();
-  setInterval(refreshHealth, 15000);
+  (async () => {
+    try {
+      state.config = await api("/api/v1/config");
+    } catch (_) {
+      state.config = null;
+    }
+    initMap();
+    refreshHealth();
+    refreshList();
+    setInterval(refreshHealth, 15000);
+  })();
 })();

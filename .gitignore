@@ -3,6 +3,8 @@ runtime/board/messages/*.json
 !runtime/board/messages/.gitignore
 runtime/board/identities/*
 !runtime/board/identities/.gitignore
+runtime/board/media/*
+!runtime/board/media/.gitignore
 __pycache__/
 *.pyc
 .venv/
