@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.3 — 2026-07-25
+
+- Legal risk hygiene: `docs/legal-notice.md`, `DISCLAIMER.md`, `TRADEMARKS.md`
+- Soften marketing: open protocol framing; no commercial-platform scrape/impersonation
+- Skill/CONTRIBUTING/SECURITY: reject unofficial-app and ToS-evasion-as-a-feature PRs
+- Health policy: no affiliation with commercial marketplaces
+
 ## 0.1.2 — 2026-07-25
 
 - Project nature: **public-interest / 公益** — no paid boost forever in mainline

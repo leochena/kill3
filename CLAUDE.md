@@ -17,6 +17,8 @@
 - 软件内违禁品/内容审核、强制 KYC
 - 中心化账号体系作为唯一身份
 - 把本项目做成又一个封闭 App / 赚钱的「官方市场」
+- **第三方商业平台爬虫、客户端破解、商标/UI 仿冒、「官方平替某某 App」**
+- 承诺「免于被起诉」或协助专门规避第三方用户协议扣罚
 
 ## Preferred architecture
 
@@ -31,7 +33,8 @@
 - 实现时**不要**加入“平台风控”“内容合规过滤”“强制实名”类逻辑。
 - **永远不要**实现付费置顶 / sponsored / ad auction；排序仅时间、距离、评价、文本相关等透明信号。
 - 可以提示用户**自行**注意法律与风险；不要替用户拦截交易内容。
-- 文档与 skill 文案保持公益与反租立场，不写成商业 SaaS 增长手册。
+- 文档与 skill 文案保持公益与反租立场，不写成商业 SaaS 增长手册；**避免**「搞垮某公司 / 官方平替某商标」式功能描述。
+- 对外与仓库内法律相关说明以 `docs/legal-notice.md`、`DISCLAIMER.md`、`TRADEMARKS.md` 为准；不构成法律意见。
 - 改协议时同步更新 schema、skill references、examples。
 - Prefer project-local tooling; if `.venv` appears later, use it.
 

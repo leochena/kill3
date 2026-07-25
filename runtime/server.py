@@ -110,7 +110,8 @@ class Handler(BaseHTTPRequestHandler):
                             "paid_boost": False,
                             "sponsored_ranking": False,
                             "project": "public-interest",
-                            "note": "dumb pipe; public-interest; no rent; no paid pin; law is government's job; quality is peer reviews",
+                            "affiliation": "none-with-commercial-marketplaces",
+                            "note": "dumb pipe; public-interest; no rent; no paid pin; not affiliated with any commercial marketplace; operators are responsible for their deployment; law is government's job; quality is peer reviews",
                         },
                         "stats": STORE.stats(),
                     }
