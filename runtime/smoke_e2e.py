@@ -231,7 +231,7 @@ def scenario_food(board_url, store) -> dict:
         post(board_url, store, conf)
         return {
             "vertical": "food_order",
-            "mode": "meal 1:1 + courier broadcast_claim",
+            "mode": "meal deal + courier offers → pick 1",
             "want": want["id"],
             "meal_deal": meal["id"],
             "courier_offers": 2,
@@ -358,11 +358,10 @@ def scenario_ride(board_url, store) -> dict:
                 "where": {"region": "上海", "label": "陆家嘴→虹桥"},
                 "need_courier": True,
                 "match": {
-                    "mode": "broadcast_claim",
+                    "mode": "one_to_many",
                     "vertical": "ride",
                     "max_accepts": 1,
                     "exclusive": True,
-                    "claim_window_sec": 120,
                 },
             },
         )
@@ -375,7 +374,7 @@ def scenario_ride(board_url, store) -> dict:
                 "fee": {"amount": "75", "currency": "CNY"},
                 "eta": "3min",
                 "vehicle": "网约车-蓝",
-                "match": {"mode": "broadcast_claim", "vertical": "ride"},
+                "match": {"mode": "one_to_many", "vertical": "ride"},
             },
             thread=want["id"],
         )
@@ -387,7 +386,7 @@ def scenario_ride(board_url, store) -> dict:
                 "fee": {"amount": "70", "currency": "CNY"},
                 "eta": "6min",
                 "vehicle": "网约车-白",
-                "match": {"mode": "broadcast_claim", "vertical": "ride"},
+                "match": {"mode": "one_to_many", "vertical": "ride"},
             },
             thread=want["id"],
         )
@@ -417,7 +416,7 @@ def scenario_ride(board_url, store) -> dict:
             store,
             env(pax, "review", {"subject_id": drv1["id"], "deal_id": deal["id"], "stars": 5, "text": "准时"}),
         )
-        return {"vertical": "ride", "mode": "broadcast_claim N drivers→1", "want": want["id"], "deal": deal["id"]}
+        return {"vertical": "ride", "mode": "one_to_many offers → passenger picks 1", "want": want["id"], "deal": deal["id"]}
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 

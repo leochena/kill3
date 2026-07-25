@@ -1,27 +1,28 @@
-# 商标与品牌政策
+# Trademark & branding policy (global)
 
-## 本项目自有标识
+## Project marks
 
-- 项目名：`free-match`、仓库名 `kill3`  
-- 对外正式称呼建议：`free-match`（协议/工具）  
-- 许可：代码 MIT；文档默认与仓库相同许可，引用时保留署名与免责声明链接  
+- Protocol / product name: **free-match**  
+- Repository name: **kill3**  
+- Prefer **free-match** in user-facing material  
+- Code: MIT. When reusing docs, keep attribution and links to disclaimer/legal notice  
 
-## 第三方商标
+## Third-party marks
 
-美团、淘宝、天猫、京东、拼多多、饿了么、抖音、微信、支付宝等均为其权利人所有。
+Names and logos of commercial marketplaces, payment apps, maps vendors, and social networks remain property of their owners.
 
-**允许（有限）：**
+**Allowed (limited, descriptive):**
 
-- 在技术文档中**叙述性**提及行业背景（例如「封闭中介平台常见模式」）  
-- 学术或互操作讨论中的Nominative fair use 限度内指称（视辖区而定）
+- Neutral discussion of industry patterns (“closed intermediary apps”)  
+- Nominative reference only where law allows and confusion is avoided  
 
-**禁止（主线仓库与官方文档/UI）：**
+**Forbidden in mainline UI, domains, packages, and official docs:**
 
-- Logo、启动图、字体标识、仿冒界面「皮」  
-- 域名/包名/Bot 名使用 `meituan-`、`taobao-official` 等易混淆形式  
-- 「官方合作」「正版授权」「某某指定」等虚假表述  
-- 将本软件宣传为上述平台的插件、官方商家后台或「破解版」  
+- Third-party logos, trade dress, or look-alike skins  
+- Names like `brand-official-bot`, `brand-free-client`  
+- Claims of partnership, certification, or “official replacement”  
+- Marketing this software as a crack, plugin, or unofficial backend for another company’s app  
 
-## 贡献
+## Contributions
 
-含第三方商标素材或仿冒 UI 的 PR 默认关闭。  
+PRs that add third-party trademark assets or confusing branding are closed by default.

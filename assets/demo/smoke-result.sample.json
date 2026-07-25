@@ -1,0 +1,71 @@
+{
+  "generated_at": "2026-07-25T06:23:45Z",
+  "smoke_exit_code": 0,
+  "stdout_json": {
+    "ok": true,
+    "results": {
+      "goods_unique": {
+        "vertical": "goods_unique",
+        "mode": "one_to_many→1",
+        "have": "fm19f97f1a88306ce62824c",
+        "deal": "fm19f97f1a88cbef4fe34d8",
+        "bids": 2
+      },
+      "food_order": {
+        "vertical": "food_order",
+        "mode": "meal 1:1 + courier broadcast_claim",
+        "want": "fm19f97f1a894badb47b671",
+        "meal_deal": "fm19f97f1a89e6d18e4ef35",
+        "courier_offers": 2,
+        "chosen_fee": "6"
+      },
+      "geo": {
+        "vertical": "geo",
+        "shop_distance_m": 34779.8,
+        "near_first": "719 m",
+        "radius_filter_ok": true
+      },
+      "ride": {
+        "vertical": "ride",
+        "mode": "one_to_many offers → passenger picks 1",
+        "want": "fm19f97f1a95ef9e2c92e72",
+        "deal": "fm19f97f1a96858f008d94f"
+      },
+      "fee_blocked": true,
+      "board": "http://127.0.0.1:19092",
+      "health": {
+        "ok": true,
+        "service": "free-match-board",
+        "v": 1,
+        "started_at": "2026-07-25T06:23:44Z",
+        "policy": {
+          "platform_fee": false,
+          "content_moderation": false,
+          "kyc_required": false,
+          "paid_boost": false,
+          "sponsored_ranking": false,
+          "project": "public-interest",
+          "affiliation": "none-with-commercial-marketplaces",
+          "note": "dumb pipe; public-interest; no rent; no paid pin; not affiliated with any commercial marketplace; operators are responsible for their deployment; law is government's job; quality is peer reviews"
+        },
+        "stats": {
+          "count": 26,
+          "by_type": {
+            "have": 3,
+            "bid": 3,
+            "accept": 2,
+            "deal": 3,
+            "review": 2,
+            "want": 2,
+            "courier.offer": 4,
+            "courier.accept": 2,
+            "fulfill": 3,
+            "confirm": 2
+          },
+          "board": "D:\\Temp\\fm_board_11qjg_uh"
+        }
+      }
+    }
+  },
+  "note": "Re-run scripts/export_demo_assets.py to refresh"
+}

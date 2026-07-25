@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-label="Web UI sketch">
+  <rect width="960" height="540" fill="#0f1419"/>
+  <text x="24" y="36" fill="#3dd6c6" font-family="Segoe UI, sans-serif" font-size="20" font-weight="700">Web UI sketch · board + map + distance</text>
+  <text x="24" y="58" fill="#8b9bb4" font-family="Segoe UI, sans-serif" font-size="12">Reference client only · OSM tiles for display · no paid pins</text>
+
+  <rect x="24" y="80" width="300" height="420" rx="12" fill="#1a2332" stroke="#2a3a52"/>
+  <text x="40" y="110" fill="#e7ecf3" font-family="Segoe UI, sans-serif" font-size="14" font-weight="600">Compose</text>
+  <rect x="40" y="130" width="260" height="28" rx="6" fill="#0c1118" stroke="#2a3a52"/>
+  <text x="50" y="149" fill="#8b9bb4" font-family="Segoe UI, sans-serif" font-size="12">title · price · vertical</text>
+  <rect x="40" y="170" width="120" height="28" rx="6" fill="#0c1118" stroke="#2a3a52"/>
+  <text x="50" y="189" fill="#8b9bb4" font-family="Segoe UI, sans-serif" font-size="12">lat</text>
+  <rect x="180" y="170" width="120" height="28" rx="6" fill="#0c1118" stroke="#2a3a52"/>
+  <text x="190" y="189" fill="#8b9bb4" font-family="Segoe UI, sans-serif" font-size="12">lon</text>
+  <rect x="40" y="220" width="120" height="32" rx="8" fill="#2bbbad"/>
+  <text x="58" y="241" fill="#041210" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700">Locate</text>
+  <rect x="170" y="220" width="130" height="32" rx="8" fill="#243247"/>
+  <text x="188" y="241" fill="#e7ecf3" font-family="Segoe UI, sans-serif" font-size="12">Map pick</text>
+  <rect x="40" y="280" width="260" height="40" rx="8" fill="url(#g)"/>
+  <text x="120" y="305" fill="#041210" font-family="Segoe UI, sans-serif" font-size="14" font-weight="700">Publish</text>
+
+  <rect x="340" y="80" width="280" height="420" rx="12" fill="#1a2332" stroke="#2a3a52"/>
+  <text x="356" y="110" fill="#e7ecf3" font-family="Segoe UI, sans-serif" font-size="14" font-weight="600">Nearby list</text>
+  <rect x="356" y="130" width="248" height="56" rx="8" fill="#121a26" stroke="#3dd6c6"/>
+  <text x="368" y="152" fill="#f0b429" font-family="Segoe UI, sans-serif" font-size="11">719 m · have · goods</text>
+  <text x="368" y="172" fill="#e7ecf3" font-family="Segoe UI, sans-serif" font-size="13">Used keyboard</text>
+  <rect x="356" y="200" width="248" height="56" rx="8" fill="#121a26" stroke="#2a3a52"/>
+  <text x="368" y="222" fill="#f0b429" font-family="Segoe UI, sans-serif" font-size="11">2.1 km · have · food</text>
+  <text x="368" y="242" fill="#e7ecf3" font-family="Segoe UI, sans-serif" font-size="13">Lunch bowl</text>
+  <rect x="356" y="270" width="248" height="56" rx="8" fill="#121a26" stroke="#2a3a52"/>
+  <text x="368" y="292" fill="#f0b429" font-family="Segoe UI, sans-serif" font-size="11">4.0 km · want · ride</text>
+  <text x="368" y="312" fill="#e7ecf3" font-family="Segoe UI, sans-serif" font-size="13">Airport run</text>
+
+  <rect x="640" y="80" width="296" height="420" rx="12" fill="#1a2332" stroke="#2a3a52"/>
+  <text x="656" y="110" fill="#e7ecf3" font-family="Segoe UI, sans-serif" font-size="14" font-weight="600">Map (OSM display)</text>
+  <rect x="656" y="130" width="264" height="300" rx="8" fill="#0a1620" stroke="#2a3a52"/>
+  <circle cx="760" cy="250" r="8" fill="#3dd6c6"/>
+  <text x="774" y="254" fill="#3dd6c6" font-family="Segoe UI, sans-serif" font-size="11">you</text>
+  <circle cx="800" cy="210" r="6" fill="#f0b429"/>
+  <circle cx="720" cy="300" r="6" fill="#f0b429"/>
+  <circle cx="840" cy="280" r="6" fill="#f0b429"/>
+  <text x="656" y="460" fill="#8b9bb4" font-family="Segoe UI, sans-serif" font-size="11">Distance = haversine · not an ad auction</text>
+
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#1f8f84"/>
+      <stop offset="100%" stop-color="#2bbbad"/>
+    </linearGradient>
+  </defs>
+</svg>

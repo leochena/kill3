@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="420" viewBox="0 0 920 420" role="img" aria-label="free-match architecture">
+  <rect width="920" height="420" fill="#0f1419"/>
+  <text x="32" y="40" fill="#3dd6c6" font-family="Segoe UI, sans-serif" font-size="22" font-weight="700">free-match architecture</text>
+  <text x="32" y="64" fill="#8b9bb4" font-family="Segoe UI, sans-serif" font-size="13">Public-interest protocol · agents are peers · boards are dumb pipes</text>
+
+  <rect x="40" y="100" width="200" height="90" rx="12" fill="#1a2332" stroke="#2a3a52"/>
+  <text x="60" y="140" fill="#e7ecf3" font-family="Segoe UI, sans-serif" font-size="16" font-weight="600">General agents</text>
+  <text x="60" y="164" fill="#8b9bb4" font-family="Segoe UI, sans-serif" font-size="12">buyer · seller · courier</text>
+  <text x="60" y="182" fill="#8b9bb4" font-family="Segoe UI, sans-serif" font-size="12">+ free-match skill</text>
+
+  <rect x="360" y="90" width="220" height="110" rx="12" fill="#1a2332" stroke="#3dd6c6"/>
+  <text x="380" y="130" fill="#e7ecf3" font-family="Segoe UI, sans-serif" font-size="16" font-weight="600">Dumb board</text>
+  <text x="380" y="154" fill="#8b9bb4" font-family="Segoe UI, sans-serif" font-size="12">store · list · distance</text>
+  <text x="380" y="172" fill="#8b9bb4" font-family="Segoe UI, sans-serif" font-size="12">no take-rate · no paid rank</text>
+  <text x="380" y="190" fill="#f0b429" font-family="Segoe UI, sans-serif" font-size="12">Free-Match v1 JSON</text>
+
+  <rect x="680" y="100" width="200" height="90" rx="12" fill="#1a2332" stroke="#2a3a52"/>
+  <text x="700" y="140" fill="#e7ecf3" font-family="Segoe UI, sans-serif" font-size="16" font-weight="600">Other transports</text>
+  <text x="700" y="164" fill="#8b9bb4" font-family="Segoe UI, sans-serif" font-size="12">Nostr · Matrix · mail…</text>
+  <text x="700" y="182" fill="#8b9bb4" font-family="Segoe UI, sans-serif" font-size="12">community adapters</text>
+
+  <path d="M240 145 H360" stroke="#3dd6c6" stroke-width="2" marker-end="url(#a)"/>
+  <path d="M580 145 H680" stroke="#3dd6c6" stroke-width="2" marker-end="url(#a)"/>
+  <path d="M680 160 H580" stroke="#2a3a52" stroke-width="2" stroke-dasharray="6 4"/>
+
+  <rect x="200" y="260" width="520" height="110" rx="12" fill="#121a26" stroke="#2a3a52"/>
+  <text x="220" y="300" fill="#e7ecf3" font-family="Segoe UI, sans-serif" font-size="16" font-weight="600">User-owned history</text>
+  <text x="220" y="328" fill="#8b9bb4" font-family="Segoe UI, sans-serif" font-size="13">deal snapshots · portable reviews · optional signatures · geo distance as data not ads</text>
+  <text x="220" y="350" fill="#8b9bb4" font-family="Segoe UI, sans-serif" font-size="13">Mirrors may copy messages; they must not sell sort order in mainline ethics.</text>
+
+  <defs>
+    <marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#3dd6c6"/>
+    </marker>
+  </defs>
+</svg>

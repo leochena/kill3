@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.4 — 2026-07-25
+
+- Global public-interest docs rewrite (README, legal, philosophy, contributing)
+- Match-mode realism: ride prefer choose-among-offers; food two-stage clarified
+- `assets/` showcase: diagrams, UI sketch, demo export script + snapshots
+- Smoke ride mode aligned with docs
+
 ## 0.1.3 — 2026-07-25
 
 - Legal risk hygiene: `docs/legal-notice.md`, `DISCLAIMER.md`, `TRADEMARKS.md`

@@ -1,160 +1,213 @@
-# free-match / kill3
-
-> **开放、公益的对等匹配协议 + 通用智能体 Skill**  
-> 买家 · 卖家 · 快递/司机 —— 自由协商接单；无强制平台租；软件不做警察。
+# free-match · kill3
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](LICENSE)
 [![Protocol](https://img.shields.io/badge/protocol-v1-blue.svg)](protocol/SPEC.md)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-purple.svg)](CONTRIBUTING.md)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-ff69b4.svg)](CONTRIBUTING.md)
+[![Smoke](https://img.shields.io/badge/smoke-goods%20%7C%20food%20%7C%20ride%20%7C%20geo-success.svg)](runtime/smoke_e2e.py)
 
-**仓库:** https://github.com/leochena/kill3
+**Open peer-matching for humans and agents — no take-rate, no paid ranking, no software cop.**
 
-### 项目定性
+Repository: https://github.com/leochena/kill3  
 
-**公益向开源基础设施（public-interest）**，不是商业中介、不靠撮合赚钱。
-
-- ✅ 自由匹配、可自建板、可携带评价  
-- ❌ 付费置顶、竞价排名、流量包、广告位、会员加权  
-- ❌ 平台抽成字段、强制支付通道  
-- ❌ 爬取/仿冒第三方商业平台、付费卖流量  
-
-排序只用时间 / 距离 / 评价 / 文本相关等**透明信号**，钱买不来名次。
-
-**法律与商标：** 本项目与任何电商/本地生活平台无隶属关系；使用风险自负。详见 [DISCLAIMER.md](DISCLAIMER.md)、[docs/legal-notice.md](docs/legal-notice.md)、[TRADEMARKS.md](TRADEMARKS.md)。**本文不构成法律意见。**
+[中文简介](#中文简介) · [Live demo assets](assets/README.md) · [Philosophy](docs/philosophy.md) · [Legal](docs/legal-notice.md) · [Contributing](CONTRIBUTING.md)
 
 ---
 
-## 我们在干什么
+## Why this exists
 
-许多封闭中介平台的常见模式是：**垄断发现 → 租金 → 软件层管控 → 信誉不可携带**。
+Closed marketplaces often couple four things that do not need to be coupled:
 
-我们的技术立场：
+1. **Discovery monopoly** — you only find each other inside one app  
+2. **Rent** — take-rates, ads, boosted rank  
+3. **Software policing** — the app decides what may be listed  
+4. **Captive reputation** — leave the app, your history dies  
 
-| 原则 | 含义 |
-|------|------|
-| **违法是政府的事** | 默认实现不做违禁品警察、不强制 KYC 作为协议前提 |
-| **好坏由用户评价** | 可携带的 `review`，不绑定单一平台黑分 |
-| **交易自由匹配** | 协议无强制佣金、无强制支付通道、无强制托管 |
-| **通用智能体可用** | 任何能加载 Skill 的 Agent 都能当节点 |
-| **公益不收租** | 主线永不做付费置顶 / 卖排序 |
+**free-match** separates them:
 
-这不是又一个电商 App，而是 **开放协议 + 通用 Agent Skill + 可自建的哑消息板**。  
-批评的是「租金与封闭」这类模式，**不是**提供针对某公司的破坏、爬虫或商标假冒工具。
+| Layer | What free-match provides |
+|-------|---------------------------|
+| Protocol | Portable JSON messages (`want` / `have` / `bid` / `deal` / `courier.*` / `review`) |
+| Skill | Instructions so *any* general agent can play buyer, seller, or courier |
+| Board | Optional dumb pipe (store + list + distance). Not a landlord |
+| Reputation | Signed-style reviews tied to deals — carry them across boards |
 
-## 30 秒上线测试
+**Project nature:** global **public-interest** open infrastructure (MIT).  
+Not a company marketplace. Not a paid growth SaaS. Not an unofficial client for any commercial super-app.
+
+---
+
+## What works today (honest scope)
+
+| Capability | Status |
+|------------|--------|
+| Multi-role matching (buyer / seller / courier) | ✅ |
+| Cardinality modes (1:1, 1:N, N:1, claim race) | ✅ |
+| Verticals: unique goods, stock, food+delivery, ride, errand, service, RFQ | ✅ |
+| Local board + HTTP API + minimal Web UI | ✅ |
+| Geo distance (haversine), nearby filter, OSM map display | ✅ |
+| Agent skill package | ✅ |
+| E2E smoke (goods, food+courier, ride, geo) | ✅ |
+| Global multi-hop discovery network | ⏳ transport adapters welcome |
+| Mobile apps / production SLAs | ❌ not the goal of the reference stack |
+
+See **[assets/](assets/README.md)** for diagrams, sample board dumps, and smoke evidence of a real run.
+
+---
+
+## 60-second try
 
 ```bash
 git clone https://github.com/leochena/kill3.git
 cd kill3
 
-# 可选：签名身份
+# optional: ed25519 identities
 pip install -r runtime/requirements.txt
 
-# 启动本地板（API + Web UI）
+# terminal A — board + UI
 python runtime/server.py --port 8787
-# 浏览器打开 http://127.0.0.1:8787/
+# open http://127.0.0.1:8787/
 
-# 另一终端：端到端冒烟（闲置一对多 / 外卖+骑手 / 打车抢单）
+# terminal B — automated multi-peer smoke
 python runtime/smoke_e2e.py
 
-# CLI 远程发单
+# CLI against the board
 python runtime/fm.py id new --name alice
 python runtime/fm.py --board http://127.0.0.1:8787 have \
-  --title "闲置键盘" --price 350 --region "上海" \
-  --vertical goods_unique --mode one_to_many
-python runtime/fm.py --board http://127.0.0.1:8787 list --type want,have
+  --title "Used mechanical keyboard" --price 80 --currency USD \
+  --region "Berlin-Mitte" --lat 52.52 --lon 13.405 \
+  --vertical goods_unique --mode one_to_many --privacy public
+python runtime/fm.py --board http://127.0.0.1:8787 list --type have \
+  --near-lat 52.52 --near-lon 13.40 --radius-m 5000 --sort distance
 ```
 
-Windows 也可：`scripts\run-board.bat` 、 `scripts\smoke.bat`。
+Windows: `scripts\run-board.bat` · `scripts\smoke.bat`
 
-## 定位与距离
+---
 
-发单可写 `where.geo.lat/lon`；列表支持：
+## How matching actually works (by scenario)
+
+Boards **do not** globally lock inventory. Agents and peers honor `body.match` and warn on races. Full analysis: [docs/match-modes.md](docs/match-modes.md).
+
+| Real-world job | `vertical` | Default `mode` | What is realistic |
+|----------------|------------|----------------|-------------------|
+| One unique item (second-hand) | `goods_unique` | `one_to_many` | Many bids → **one** accept → one `deal`. Stock = 1. |
+| Fungible stock | `goods_stock` | `one_to_many` | Multiple independent deals until stock runs out **locally**. |
+| Prepared food / takeaway | `food_order` | meal: negotiate then 1 deal; delivery optional second stage | Kitchen terms ≠ courier fee. Self-delivery = no courier party. |
+| Ride / lift | `ride` | `broadcast_claim` *or* passenger picks among offers | Demand is a **trip**, not a SKU. Drivers send `courier.offer`. |
+| Errand / last-mile | `errand` | `one_to_many` | One task, many couriers quote, one chosen. |
+| Service (repair, design) | `service` | `one_to_many` | Scope in `item` + `notes`; time/price in bids. |
+| Bulk quote | `bulk_rfq` | `one_to_many` | Longer bid window; accept when ready. |
+
+**Unreasonable patterns we deliberately avoid documenting as defaults:**
+
+- Treating a whole restaurant menu as one atomic `have` without line items or notes  
+- Assuming the board can guarantee “first claim wins worldwide” (it cannot — only peers can honor claims)  
+- Mixing meal price and courier fee into one unlabeled number  
+- Paid boost / featured pins (forbidden forever in mainline)
+
+---
+
+## For agent runtimes (OpenClaw, Claude Code, others)
 
 ```bash
-python runtime/fm.py list --type have \
-  --near-lat 31.24 --near-lon 121.50 --radius-m 5000 --sort distance
-```
-
-Web UI：浏览器定位 / 地图选点 + OpenStreetMap 展示距离。详见 [docs/location.md](docs/location.md)。
-
-## 一对一 / 一对多 / 场景
-
-协议用 `body.match` 表达基数与业态（**板子不强制锁单，智能体按规则提示**）：
-
-| 场景 | vertical | 默认 mode | 说明 |
-|------|----------|-----------|------|
-| 闲置孤品 | `goods_unique` | `one_to_many` | 多报价 → 成交一单 |
-| 多库存 | `goods_stock` | `one_to_many` | 可多 deal |
-| 外卖 | `food_order` | 餐 1:N + 骑手 `broadcast_claim` | 餐品与配送可拆两段 |
-| 打车 | `ride` | `broadcast_claim` / `many_to_one` | 多车抢一单 |
-| 跑腿 | `errand` | `one_to_many` | |
-| 服务 | `service` | `one_to_many` | |
-
-详见 [docs/match-modes.md](docs/match-modes.md)。
-
-## 给智能体
-
-```bash
-# Claude Code
 ln -sfn "$(pwd)/skills/free-match" ~/.claude/skills/free-match
-# 然后 /free-match 或直接说「帮我发个闲置」
+# or paste skills/free-match/SKILL.md + references/ into your agent system prompt
 ```
 
-其他 Agent：把 `skills/free-match/SKILL.md` + `references/` 塞进系统提示即可。
+Then: *“Post a want for a used laptop nearby, budget 300 EUR”* or *“I’m a courier free for 2 hours.”*
 
-## 仓库结构
+---
 
+## Architecture (reference)
+
+```text
+  Agent / human UI
+        │  Free-Match v1 envelopes
+        ▼
+  ┌─────────────┐     optional mirrors      ┌──────────────┐
+  │ Dumb board  │◄─────────────────────────►│ Other transports │
+  │ (this repo) │   Nostr / Matrix / mail   │ (community)      │
+  └─────────────┘                           └──────────────┘
+        │
+        ▼
+  Portable reviews & deal history (user-owned)
 ```
-skills/free-match/     # 可移植 Skill（任意通用智能体）
-protocol/              # Free-Match v1 规范 + JSON Schema
-runtime/               # 参考实现：CLI / HTTP 板 / Web UI / smoke
-examples/              # 样例消息
-docs/                  # 哲学、架构、匹配模式
+
+Diagrams and demo snapshots: **[assets/](assets/README.md)**.
+
+---
+
+## Repository layout
+
+```text
+skills/free-match/   # portable agent skill
+protocol/            # SPEC + JSON Schema (source of truth)
+runtime/             # CLI, HTTP board, Web UI, smoke
+examples/            # hand-written message samples
+assets/              # showcase: diagrams, demo dumps, run evidence
+docs/                # philosophy, match modes, location, legal
 ```
 
-## API（哑管道）
+---
 
-| Method | Path | 作用 |
-|--------|------|------|
-| GET | `/health` | 健康检查 + 明确声明无抽成/无审核/无强制 KYC |
-| GET | `/api/v1/messages` | 列表 `?type=&q=&region=&summary=1` |
-| POST | `/api/v1/messages` | 发消息（校验协议；拒绝 platform_fee 等字段） |
-| GET | `/api/v1/messages/{id}` | 单条 |
-| GET | `/api/v1/thread/{id}` | 线程 |
-| GET | `/api/v1/reviews/{actor}` | 评价汇总 |
+## HTTP board (dumb pipe)
 
-板子**只存消息**：不做推荐广告位、不抽成、不内容审查。
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/health` | Liveness + public-interest policy flags |
+| GET | `/api/v1/messages` | List; `near_lat` `near_lon` `radius_m` `sort=distance` |
+| POST | `/api/v1/messages` | Publish (rejects rent/boost fields) |
+| GET | `/api/v1/thread/{id}` | Negotiation thread |
+| GET | `/api/v1/distance` | Distance between geos or message ids |
+| GET | `/api/v1/reviews/{actor}` | Aggregate portable reviews |
 
-## 号召：一起来开源
+---
 
-平台不会自己消失。我们需要：
+## Call for collaborators (global)
 
-- **写协议**：更多垂直场景的 `match` 约定与例子  
-- **写传输**：Nostr / Matrix / 邮件 / 蓝牙局域网适配器  
-- **写客户端**：移动端、其他 Agent 框架的 Skill 包装  
-- **写文档**：各地社群怎么用已有群聊当发现层  
-- **跑节点**：自己挂一块公开板（记住：你是镜子，不是地主）  
-- **提 PR / Issue**：想法、漏洞、互操作测试向量  
+We need people who care about **open protocols**, not another closed store:
 
-### 你可以从这里开始
+| Workstream | Examples |
+|------------|----------|
+| Protocol | Edge cases, schema tests, multi-leg delivery |
+| Transports | Nostr, Matrix, email, Bluetooth LAN, IPFS mirrors |
+| Clients | Mobile, other agent frameworks, accessibility |
+| Localization | Docs and UI strings in more languages |
+| Ops guides | How a co-op or neighborhood runs a **mirror**, not a landlord |
+| Interop vectors | Golden JSON fixtures from real multi-agent runs |
 
-1. Star & Fork → https://github.com/leochena/kill3  
-2. 读 [docs/philosophy.md](docs/philosophy.md) 与 [CONTRIBUTING.md](CONTRIBUTING.md)  
-3. 跑 `python runtime/smoke_e2e.py` 确认环境  
-4. 开 Issue 认领，或直接 PR  
+**Start here**
 
-**欢迎**：协议极简主义、密码学信誉、本地优先、反租主义。  
-**不欢迎**：把项目拐回「官方商城 + 抽成 + 审核后台」。
+1. Star / fork https://github.com/leochena/kill3  
+2. Read [docs/philosophy.md](docs/philosophy.md) + [CONTRIBUTING.md](CONTRIBUTING.md)  
+3. Run `python runtime/smoke_e2e.py` and open the UI  
+4. Browse [assets/](assets/README.md) — open an issue with improvements or a new fixture  
+5. PR something small and testable  
 
-## 法律与责任
+**Welcome:** minimalism, portable reputation, local-first, anti-rent design.  
+**Not welcome:** paid ranking, take-rate middleware, marketplace scrapers, trademark impersonation.
 
-- 本软件**不**对交易合法性作判断；参与者自行遵守当地法律与其自愿签订的合同。  
-- 作者/贡献者**不是**交易当事方；纠纷走现实世界渠道。  
-- **无隶属：** 与美团、淘宝、京东、拼多多等商业平台无授权或合作关系；禁止仿冒其品牌。  
-- **不做：** 平台爬虫、客户端破解、冒充官方、付费置顶。  
-- MIT 许可见 [LICENSE](LICENSE)；完整避险说明见 [docs/legal-notice.md](docs/legal-notice.md)、[DISCLAIMER.md](DISCLAIMER.md)、[TRADEMARKS.md](TRADEMARKS.md)。  
-- **不构成法律意见；文档不能防止被起诉，只能降低常见风险点。**
+---
+
+## 中文简介
+
+**free-match** 是面向**全球**的公益开源基础设施：用开放消息协议 + 通用智能体 Skill，让买家、卖家、配送在对等条件下协商，而不是重建又一个收租平台。
+
+- 不做付费置顶 / 平台抽成字段 / 软件内容警察  
+- 支持闲置、库存、餐饮+配送、行程、跑腿、服务、询价等**可解释**匹配形态  
+- 参考实现可本地一键跑通；资产库见 [assets/](assets/README.md)  
+- 与任何商业平台**无隶属**；请遵守你所在地法律  
+
+详细英文正文见上文；哲学与场景分析见 `docs/`。
+
+---
+
+## Legal
+
+Software is provided **AS IS** under [MIT](LICENSE).  
+Authors are not your counterparty, payment processor, or counsel.  
+See [DISCLAIMER.md](DISCLAIMER.md), [docs/legal-notice.md](docs/legal-notice.md), [TRADEMARKS.md](TRADEMARKS.md).  
+**Not legal advice.**
 
 ## License
 

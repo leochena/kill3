@@ -1,83 +1,83 @@
-# 法律声明与风险说明（Legal Notice）
+# Legal notice & risk framing (global)
 
-> **本文不是律师函、不是法律意见。** 不同司法辖区规则不同。作者与贡献者不对你能否「免于被诉」作任何保证。若你有商业部署或高风险用途，请自行咨询有资质的律师。
+> **This is not legal advice.** Laws differ by jurisdiction. Maintainers do not promise that documentation prevents lawsuits or enforcement. For commercial or high-risk deployments, consult a qualified lawyer where you operate.
 
-## 1. 项目是什么 / 不是什么
+## 1. What this project is / is not
 
-### 是
+### Is
 
-- **开源协议规范**（Free-Match v1 消息格式）  
-- **通用智能体 Skill**（教 Agent 如何读写该协议）  
-- **可选参考实现**（本地/自建「哑消息板」：存取 JSON）  
-- **公益向公共基础设施**（不设平台抽成、不做付费置顶）
+- An **open message protocol** (Free-Match v1)  
+- A **portable agent skill** describing how general agents may speak that protocol  
+- An **optional reference implementation** (dumb message board: store/list/distance)  
+- **Public-interest** infrastructure under MIT (no take-rate, no paid ranking in mainline)
 
-### 不是
+### Is not
 
-- 不是淘宝、京东、美团、拼多多等任何商业平台的**替代运营方**或**官方产品**  
-- 不是在替用户**运营**交易、收款、配送、客服、担保  
-- 不是「破解 / 爬取 / 镜像」第三方平台的工具  
-- 不是教唆用户违反其与第三方平台之间**合同**的专用产品  
+- An operator of consumer marketplaces, payments, logistics fleets, or escrow  
+- An official product of, or substitute branded as, any commercial marketplace  
+- A scraper, cracker, or “unofficial client” for third-party apps  
+- A product whose purpose is to induce breach of third-party contracts  
 
-仓库名 `kill3`、口号中的「反租 / 自由匹配」表达的是**对中介租金与封闭生态的技术立场**，**不**针对任何一家具名公司实施侵权、诋毁或破坏其计算机系统。
+The repository name and anti-rent language express a **technical stance against intermediary rent and captive reputation**, not instructions to harm any named company’s systems, trademarks, or trade secrets.
 
-## 2. 与第三方商业平台的关系（避险要点）
+## 2. Relationship to commercial platforms (anywhere)
 
-| 原则 | 说明 |
-|------|------|
-| **无隶属** | 本项目与美团、淘宝、天猫、京东、拼多多、抖音电商、饿了么等**无任何隶属、授权、赞助或合作关系**（除非另行书面声明）。 |
-| **商标** | 上述名称若出现在文档中，**仅用于说明行业背景或互操作讨论**，不表示来源、不表示兼容认证、不表示可替代其商标商品服务。**禁止**在 UI、域名、包名、推广中使用其 Logo、近似商标或「官方 / 旗舰」等易混淆表述。 |
-| **不爬取** | 参考实现与 Skill **不得**以抓取、批量导出、绕过登录/风控、破解客户端为功能目标。贡献含此类代码的 PR 应拒绝。 |
-| **不诱导违约作为产品功能** | 不提供「一键从某平台搬家并规避其规则/扣费」的专用功能。用户是否继续使用某平台、是否遵守其用户协议，由用户自行判断。 |
-| **不攻击系统** | 禁止将本仓库用于 DDoS、撞库、漏洞利用、供应链投毒等针对任何平台的攻击。 |
-| **竞争中立** | 协议对所有对等参与者开放；文档批评的是**中介租金与封闭信誉**这一类模式，而非号召非法损害特定公司商誉或商业秘密。 |
+| Principle | Meaning |
+|-----------|---------|
+| **No affiliation** | No employment, sponsorship, endorsement, or partnership with any commercial marketplace is implied. |
+| **Trademarks** | Third-party marks may appear only in neutral descriptive discussion if at all. Do **not** use their logos, trade dress, or “official / verified partner” claims in UI, domains, or package names. See [TRADEMARKS.md](../TRADEMARKS.md). |
+| **No scraping** | Mainline code and docs must not target bulk extraction or bypass of technical protection measures of third-party services. |
+| **No ToS-evasion product** | Do not ship features whose primary purpose is “bypass platform penalties / scrape shop data into free-match.” |
+| **No attacks** | No DDoS, credential stuffing, exploit kits, or supply-chain malice. |
+| **Competition-neutral protocol** | Critique targets **patterns** (rent, enclosure), not a call to illegal injury of a specific firm. |
 
-## 3. 作者 / 贡献者 vs 使用者
+## 3. Authors vs users vs board operators
 
-在 MIT 许可与适用法律允许的最大范围内：
+To the maximum extent permitted by applicable law and the MIT license:
 
-1. **软件按「现状」提供**，无适销性、特定用途适用性等保证（见 [LICENSE](../LICENSE)）。  
-2. **作者与贡献者**提供的是源代码与文档，**不是**你与对手方交易的缔约方、保证人或支付机构。  
-3. **发单、成交、收款、配送、纳税、证照、食品药品、运输许可**等义务，由**实际从事该行为的用户 / 商户 / 骑手 / 板子运营者**自行承担。  
-4. 你若**公开运行**一块消息板，你是该服务的运营者，应自行评估本地对 UGC、网络安全、电商、外卖、网约车等规范；本仓库的「默认不做内容审核」**不**免除你作为运营者在当地可能负有的法定义务。  
-5. 因使用、修改、再分发本软件引起的**诉讼、仲裁、行政处罚、索赔**，由使用者自行处理；作者与贡献者不就间接、附带、后果性损害负责（在法律禁止排除的范围内除外）。
+1. Software is provided **AS IS** ([LICENSE](../LICENSE)).  
+2. Authors/contributors ship **code and docs**, not your contract of sale.  
+3. Listing, payment, delivery, tax, licensing, and consumer duties fall on **people who actually do those acts**.  
+4. If you **publicly operate** a board, you are the operator of that service and must assess local rules for hosting user content and any regulated verticals you enable. “No default content police in the reference board” does **not** waive operator duties where law imposes them.  
+5. Claims arising from use, modification, or redistribution are handled by the parties involved; maintainers disclaim indirect and consequential damages where waivable.
 
-## 4. 用户与板子运营者自检清单（建议）
+## 4. Operator checklist (suggested)
 
-在连接真实交易前，自行确认：
+Before real-world use:
 
-- [ ] 不使用第三方平台商标/UI 仿冒造成混淆  
-- [ ] 不利用本工具爬取其数据或绕过其技术保护措施  
-- [ ] 商品/服务本身符合所在地法律（证照、禁限售、进出口等）  
-- [ ] 若面向公众提供在线服务，已了解当地对平台/信息服务的合规要求  
-- [ ] 税务、发票、消费者权益、劳动/灵活用工等已单独处理  
-- [ ] 隐私与定位数据收集有依据与告知（浏览器定位由用户触发）  
+- [ ] No confusingly similar branding to third-party marketplaces  
+- [ ] No scraping or TPM bypass tooling  
+- [ ] Goods/services lawful in your jurisdiction  
+- [ ] Public hosting: understand local intermediary / e-commerce / transport rules that may apply to **you**  
+- [ ] Tax, invoicing, labor/contractor status handled separately  
+- [ ] Location/privacy: user-triggered geolocation; document your retention  
 
-## 5. 文档与宣传用语
+## 5. Messaging guidelines
 
-对外介绍时建议强调：
+Prefer:
 
-- 「开放对等匹配协议 / 公益开源工具」  
-- 「用户可自愿点对点协商」  
-- 「与任何商业平台无官方关系」  
+- “Open peer-matching protocol / public-interest tooling”  
+- “Voluntary peer negotiation”  
+- “No affiliation with commercial marketplaces”
 
-避免作为**产品承诺**使用的表述：
+Avoid as product promises:
 
-- 「保证免抽成、保证不被平台追究」  
-- 「专用于规避某某 App 规则 / 扣罚」  
-- 「官方平替某某」  
+- “Guaranteed free of all platform risk / lawsuits”  
+- “Built to evade App X rules”  
+- “Official drop-in replacement for Brand Y”
 
-仓库内历史口号若含激烈修辞，应理解为**技术哲学表达**，不构成对特定主体的侵权指示。
+## 6. Notices
 
-## 6. 通知与争议
+IP or illegal-content notices: GitHub Issue titled `[LEGAL]` with rights proof and URLs.  
+Maintainers may remove clearly infringing assets or close violating PRs.  
+The reference board does not promise 24×7 moderation of every third-party deployment.
 
-- 知识产权或违法内容投诉：请通过 GitHub 仓库 Issues（标题加 `[LEGAL]`）或仓库所有者公开联系方式。  
-- 收到有效通知后，维护者**可**删除明显侵权的文档/资源或违规 PR；哑管道参考实现默认不审查交易正文，**不**等于承诺 24 小时监控所有派生站点。  
-- 本文件与 [SECURITY.md](../SECURITY.md)、[LICENSE](../LICENSE) 一并阅读；冲突时以 **LICENSE** 的许可条款与强行法为准。
+Read with [SECURITY.md](../SECURITY.md) and [LICENSE](../LICENSE). License and mandatory law prevail on conflict.
 
-## 7. 总结（给作者自己的避险姿势）
+## 7. Hygiene for maintainers (global)
 
-1. **做协议与工具，不当交易担保人。**  
-2. **不碰商标仿冒、不碰平台爬虫/破解。**  
-3. **不把「搞垮某公司」写成功能规格。**  
-4. **MIT + 免责声明 + 公益中立**写清楚。  
-5. **真实法律风险无法靠文档清零**——高风险场景请律师审。  
+1. Ship protocol and tools — do not become guarantor of trades.  
+2. No trademark impersonation; no marketplace scrapers in mainline.  
+3. Do not write “destroy Company X” into feature specs.  
+4. Keep MIT + public-interest + anti-rent ranking.  
+5. **Documentation cannot eliminate legal risk.**  

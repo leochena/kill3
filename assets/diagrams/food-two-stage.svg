@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="300" viewBox="0 0 920 300" role="img" aria-label="food two stage matching">
+  <rect width="920" height="300" fill="#0f1419"/>
+  <text x="32" y="40" fill="#3dd6c6" font-family="Segoe UI, sans-serif" font-size="22" font-weight="700">food_order — two optional stages</text>
+  <text x="32" y="64" fill="#8b9bb4" font-family="Segoe UI, sans-serif" font-size="13">Do not merge meal price and courier fee into one unlabeled number</text>
+
+  <rect x="40" y="100" width="380" height="150" rx="12" fill="#1a2332" stroke="#3dd6c6"/>
+  <text x="60" y="140" fill="#f0b429" font-family="Segoe UI, sans-serif" font-size="16" font-weight="700">Stage 1 · Kitchen</text>
+  <text x="60" y="170" fill="#e7ecf3" font-family="Segoe UI, sans-serif" font-size="14">want/have → bid → accept → deal(meal)</text>
+  <text x="60" y="196" fill="#8b9bb4" font-family="Segoe UI, sans-serif" font-size="13">diet notes · ready time · pickup vs delivery intent</text>
+  <text x="60" y="222" fill="#8b9bb4" font-family="Segoe UI, sans-serif" font-size="13">Self-pickup stops here (no courier party)</text>
+
+  <rect x="500" y="100" width="380" height="150" rx="12" fill="#1a2332" stroke="#2a3a52"/>
+  <text x="520" y="140" fill="#f0b429" font-family="Segoe UI, sans-serif" font-size="16" font-weight="700">Stage 2 · Movement (optional)</text>
+  <text x="520" y="170" fill="#e7ecf3" font-family="Segoe UI, sans-serif" font-size="14">courier.offer* → accept one → fulfill*</text>
+  <text x="520" y="196" fill="#8b9bb4" font-family="Segoe UI, sans-serif" font-size="13">separate fee · ETA · reviews for courier</text>
+  <text x="520" y="222" fill="#8b9bb4" font-family="Segoe UI, sans-serif" font-size="13">link with based_on / deal_id — not platform dispatch tax</text>
+
+  <path d="M420 175 H500" stroke="#3dd6c6" stroke-width="2" marker-end="url(#a)"/>
+  <defs>
+    <marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#3dd6c6"/>
+    </marker>
+  </defs>
+</svg>

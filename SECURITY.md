@@ -1,37 +1,33 @@
-# 安全说明
+# Security
 
-## 本项目明确不做的“安全”
+## What this project intentionally is not
 
-- 不提供平台级内容审核或违禁品过滤作为默认能力。  
-- 不保证交易对手诚实；请用小额试单、面交、可验证评价自行管理风险。  
-- 不托管资金；若你自建托管，那是**另一套**对等合约，不是 free-match 核心。
+- Not a default global content-moderation engine  
+- Not a guarantee of counterparty honesty — use small trials, meetup, portable reviews  
+- Not an escrow/payment institution  
 
-## 欢迎报告的问题
+## Please report
 
-- 协议校验绕过（例如 forbidden 抽成/boost 字段未被拒绝）  
-- 路径穿越 / DoS（超大 body）等 **实现层** 漏洞  
-- 签名规范歧义导致互操作失败  
+- Validation bypass (e.g. `platform_fee` / `boost` accepted)  
+- Path traversal / oversized payload issues in the reference server  
+- Signature interoperability bugs  
 
-请在 GitHub Issues 描述复现步骤。  
-**不要**在公开 issue 里贴真实私钥、完整支付凭证。
+Use GitHub Issues. **Do not** paste private keys or live payment credentials.
 
-## 明确不在范围内的「功能请求」
+## Out of scope (will not ship in mainline)
 
-以下内容**不会**作为主线功能接受（亦利于降低对作者与项目的法律风险）：
+- Scraping or bypassing third-party commercial apps’ technical controls  
+- Trademark / official-client impersonation  
+- Features whose primary purpose is inducing breach of third-party contracts  
+- Attacks against third parties  
 
-- 爬取、镜像、绕过第三方商业平台（电商/外卖/网约车等）的数据或技术保护措施  
-- 仿冒第三方商标、官方客户端或商家后台  
-- 专门用于协助用户违反其与第三方平台用户协议的「一键规避扣罚」工具  
-- 针对特定公司的攻击、骚扰或商誉诋毁自动化  
+Security research must follow applicable law and authorization.
 
-安全研究请遵守法律与目标方授权范围。
+## Legal / IP notices
 
-## 法律 / 侵权通知
+Open a GitHub Issue titled `[LEGAL]` with rights proof and URLs.  
+See [docs/legal-notice.md](docs/legal-notice.md).
 
-知识产权或明显违法内容投诉：GitHub Issue 标题加 `[LEGAL]`，并附权属证明与定位链接。  
-详见 [docs/legal-notice.md](docs/legal-notice.md)。
+## Liability
 
-## 责任
-
-使用本软件产生的法律与经济后果由参与者自行承担。  
-作者与贡献者不是交易当事方。见 [DISCLAIMER.md](DISCLAIMER.md) 与 [LICENSE](LICENSE)。
+Use at your own risk. Authors are not trade parties. See [DISCLAIMER.md](DISCLAIMER.md) and [LICENSE](LICENSE).

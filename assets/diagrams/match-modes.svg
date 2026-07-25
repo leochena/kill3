@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="360" viewBox="0 0 920 360" role="img" aria-label="match modes">
+  <rect width="920" height="360" fill="#0f1419"/>
+  <text x="32" y="40" fill="#3dd6c6" font-family="Segoe UI, sans-serif" font-size="22" font-weight="700">Match cardinality</text>
+  <text x="32" y="64" fill="#8b9bb4" font-family="Segoe UI, sans-serif" font-size="13">Hints for agents — boards do not globally lock the world</text>
+
+  <!-- cards -->
+  <g font-family="Segoe UI, sans-serif">
+    <rect x="32" y="100" width="160" height="100" rx="10" fill="#1a2332" stroke="#2a3a52"/>
+    <text x="48" y="132" fill="#f0b429" font-size="14" font-weight="700">one_to_one</text>
+    <text x="48" y="156" fill="#e7ecf3" font-size="13">1 ↔ 1</text>
+    <text x="48" y="178" fill="#8b9bb4" font-size="12">private terms</text>
+
+    <rect x="208" y="100" width="160" height="100" rx="10" fill="#1a2332" stroke="#3dd6c6"/>
+    <text x="224" y="132" fill="#f0b429" font-size="14" font-weight="700">one_to_many</text>
+    <text x="224" y="156" fill="#e7ecf3" font-size="13">1 → N bids</text>
+    <text x="224" y="178" fill="#8b9bb4" font-size="12">unique goods · RFQ</text>
+
+    <rect x="384" y="100" width="160" height="100" rx="10" fill="#1a2332" stroke="#2a3a52"/>
+    <text x="400" y="132" fill="#f0b429" font-size="14" font-weight="700">many_to_one</text>
+    <text x="400" y="156" fill="#e7ecf3" font-size="13">N → 1 slot</text>
+    <text x="400" y="178" fill="#8b9bb4" font-size="12">capacity queue</text>
+
+    <rect x="560" y="100" width="160" height="100" rx="10" fill="#1a2332" stroke="#2a3a52"/>
+    <text x="576" y="132" fill="#f0b429" font-size="14" font-weight="700">many_to_many</text>
+    <text x="576" y="156" fill="#e7ecf3" font-size="13">N ↔ M</text>
+    <text x="576" y="178" fill="#8b9bb4" font-size="12">open board</text>
+
+    <rect x="736" y="100" width="160" height="100" rx="10" fill="#1a2332" stroke="#2a3a52"/>
+    <text x="752" y="132" fill="#f0b429" font-size="14" font-weight="700">broadcast_claim</text>
+    <text x="752" y="156" fill="#e7ecf3" font-size="13">soft race</text>
+    <text x="752" y="178" fill="#8b9bb4" font-size="12">peers honor claim</text>
+  </g>
+
+  <rect x="32" y="230" width="856" height="90" rx="12" fill="#121a26" stroke="#2a3a52"/>
+  <text x="52" y="268" fill="#e7ecf3" font-family="Segoe UI, sans-serif" font-size="15" font-weight="600">Verticals are labels, not bans</text>
+  <text x="52" y="294" fill="#8b9bb4" font-family="Segoe UI, sans-serif" font-size="13">goods_unique · goods_stock · food_order (meal ± courier) · ride (prefer choose-among-offers) · errand · service · bulk_rfq</text>
+</svg>

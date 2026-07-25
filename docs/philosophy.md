@@ -1,111 +1,92 @@
-# 哲学与边界
+# Philosophy & boundaries (global public-interest)
 
-## 为什么要干掉第三方平台
+## Problem pattern (not a single country)
 
-第三方平台的典型模式：
+Intermediary platforms often combine:
 
-1. **撮合垄断** — 买卖双方不能直接发现彼此，必须经过平台搜索/算法。
-2. **租金** — 抽成、广告、支付通道费、保证金。
-3. **软件监管** — 以“安全/合规”为名决定你能卖什么、说什么、找谁。
-4. **信誉绑架** — 评价锁在平台内，离开即归零。
-5. **规则单方修改** — 封号、限流、改费率，用户无对等权力。
+1. **Discovery monopoly**  
+2. **Rent** (take-rate, ads, paid rank)  
+3. **Software policing** of listings  
+4. **Captive reputation**  
+5. **Unilateral rule changes**
 
-本项目的立场：**撮合应是协议问题，不是地主问题。**
+**Stance:** matching should be a **protocol problem**, not a landlord problem.
 
-## 项目定性：公益基础设施
+## Project nature
 
-**free-match / kill3 是公益向、开源基础设施**，不是要做下一个赚钱的中介平台。
+**free-match / kill3 is global public-interest open infrastructure**, not a rent-seeking marketplace operator.
 
-| 是 | 不是 |
-|----|------|
-| 公共协议 + 可自建哑管道 | 运营公司收租的产品 |
-| 降低信息不对称与中介盘剥 | 用流量位/会员/置顶变现 |
-| MIT 共建、可分叉 | 官方唯一商城与抽成后台 |
+| Is | Is not |
+|----|--------|
+| Public protocol + self-hostable dumb pipes | A company that monetizes your matches |
+| Lower friction for peer discovery | Paid pins, membership rank, ad auctions |
+| MIT, forkable | The “one official store” |
 
-因此**永久不做**：
+**Forever out of mainline:** paid boost, sponsored sort, traffic packs, selling rank.
 
-- 付费置顶、竞价排名、热搜拍卖  
-- 流量包、推广通、店铺保证金（对协议/默认板）  
-- 广告位、CPC/CPM 中介层  
-- 把「排序权重」卖给出价更高的人  
+Sort only on **transparent** signals: time, distance, review samples, text relevance.
 
-排序只能基于**用户可见、可解释**的信号（时间、距离、评价样本、文本相关），且**不得**因付费改变名次。
+## Four hard rules
 
-## 四条铁律
+### 1. Illegality is for public authorities
 
-### 1. 违法是政府的事情
+Default software does **not** ship:
 
-软件**不**内置：
+- Global banned-goods engines as protocol  
+- Mandatory KYC as a protocol prerequisite  
+- A “safety model” that rewrites peer intent  
 
-- 违禁品清单与自动拦截
-- 强制实名 / KYC 作为交易前提
-- 内容审核员或“安全模型”替用户做合法性判决
+Software **may**:
 
-软件**可以**：
+- Remind users to follow **local** law  
+- Support **optional** user-local filters (off by default, not protocol-mandatory)
 
-- 提醒用户“请自行遵守所在地法律”
-- 提供可选的本地策略插件（用户自己装的规则），但**默认关闭、非协议强制**
+### 2. Quality is peer evaluation
 
-### 2. 好坏由用户评价
+- Reputation = verifiable history (deals + reviews)  
+- Reviews are portable messages  
+- No protocol-level “global permanent ban”; personal blocklists are user preference  
 
-- 信誉 = 可验证的历史（成交、履约、对手方评价）
-- 评价可携带、可公开、可被多方索引
-- 没有“平台永久封禁”作为协议层概念；个人/社群可维护自己的黑名单，那是**用户偏好**，不是协议强制
+### 3. Free matching without intermediary rent
 
-### 3. 交易自由匹配，不受第三方剥削
+- Many discovery doors; no single mandatory market  
+- Price, payment, delivery are peer terms  
+- No mandatory commission field  
 
-- 发现通道可多选，无官方唯一市场
-- 价格、支付方式、交付方式由当事方约定
-- 协议不强制任何中介费字段；若有人自愿付中介，那是另一笔对等交易
+### 4. Public-interest: no traffic monetization
 
-### 4. 公益不收租：不做流量变现
+- Reference board must not sell rank  
+- Forbidden fields include `boost`, `sponsored`, `ad_bid`, …  
+- A third party may run a paid mirror as **their** fork — not free-match mainline docs  
 
-- 默认板与参考实现**禁止**付费置顶、推广通、会员加权排序  
-- 协议**禁止** `boost` / `sponsored` / `ad_bid` 等字段进入核心消息  
-- 有人若自建「收钱的镜子」，那是他们的分叉，**不是** free-match 主线；主线文档与 skill 不得教你怎么收租
+## Roles
 
-## 角色
+| Role | Job |
+|------|-----|
+| buyer | demand, pay as agreed, confirm, review |
+| seller | supply, deliver, review |
+| courier | transport capacity, fulfill events, review |
+| agent | any hat, or pure assistant |
 
-| 角色 | 做什么 |
-|------|--------|
-| **buyer** | 发布需求 / 响应供给 / 付款约定 / 确认收货 / 评价 |
-| **seller** | 发布供给 / 响应需求 / 发货或交付 / 收款约定 / 评价 |
-| **courier** | 响应物流需求 / 取送 / 签收证明 / 运费约定 / 评价 |
-| **agent** | 通用智能体，可扮演以上任一角色，也可只做助手 |
+## Trust (minimal)
 
-一人/一 agent 可多角色。
-
-## 信任模型（最小）
-
-```
-身份（可选密钥） → 消息签名 → 成交记录 → 评价签名 → 他人可独立验证
+```text
+identity (optional keys) → messages → deal record → reviews → independent verify
 ```
 
-- **不信任中心服务器**作为真相源；服务器只是传输或索引。
-- **信任密码学与对手方历史**；新身份默认无信誉，靠成交积累。
-- **可选多签/对等托管**：双方约定，非协议强制。
+Servers are mirrors, not courts or banks.
 
-## 与“去中心化电商”项目的区别
+## Legal framing
 
-很多项目仍在重建平台（链上商城、DApp 店铺）。  
-本项目优先：**skill + 协议**，让**已有的通用智能体**直接成为节点，而不是先拉用户进一个新 App。
+Anti-rent rhetoric targets **patterns**. It is not a feature to scrape or impersonate commercial apps. See [legal-notice.md](legal-notice.md).
 
-仓库名与反租修辞表达的是对**中介租金与封闭信誉**的技术立场，**不是**教人去侵权、爬取或仿冒任何具名商业公司。合法中立工具边界见 [legal-notice.md](legal-notice.md)。
+## Explicit non-goals
 
-## 明确不做
-
-| 不做 | 原因 |
-|------|------|
-| 平台抽成逻辑 | 目标就是干掉这个 |
-| 全局内容审核 | 违反铁律 1 |
-| 强制托管资金 | 引入新的房东与监管点 |
-| 唯一官方中继 | 会重新中心化 |
-| 替用户保证“安全交易” | 无法保证；只提供工具与可验证记录 |
-
-## 可以做
-
-- 清晰的消息类型与状态机
-- 本地/联邦发现
-- 签名与评价携带
-- 多传输适配器
-- 人类可读的议价话术模板（由 skill 指导 agent）
+| Non-goal | Why |
+|----------|-----|
+| Take-rate logic | Project purpose |
+| Paid discovery | Rule 4 |
+| Forced escrow | New landlord |
+| Single official relay | Recentralization |
+| “Guaranteed safe trade” | Unachievable; tools only |
+| Unofficial super-app clients | Legal/hygiene + wrong architecture |

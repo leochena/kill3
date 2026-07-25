@@ -1,0 +1,414 @@
+{
+  "generated_at": "2026-07-25T06:23:44Z",
+  "purpose": "Public gallery demo — fictional peers, global sample cities",
+  "health": {
+    "ok": true,
+    "service": "free-match-board",
+    "v": 1,
+    "started_at": "2026-07-25T06:23:43Z",
+    "policy": {
+      "platform_fee": false,
+      "content_moderation": false,
+      "kyc_required": false,
+      "paid_boost": false,
+      "sponsored_ranking": false,
+      "project": "public-interest",
+      "affiliation": "none-with-commercial-marketplaces",
+      "note": "dumb pipe; public-interest; no rent; no paid pin; not affiliated with any commercial marketplace; operators are responsible for their deployment; law is government's job; quality is peer reviews"
+    },
+    "stats": {
+      "count": 7,
+      "by_type": {
+        "have": 2,
+        "bid": 1,
+        "deal": 1,
+        "courier.offer": 2,
+        "want": 1
+      },
+      "board": "D:\\Temp\\fm_demo_assets_cah0s15c"
+    }
+  },
+  "messages": [
+    {
+      "v": 1,
+      "id": "fm19f97f1a572fac5dfd814",
+      "type": "have",
+      "ts": "2026-07-25T06:23:43Z",
+      "from": {
+        "id": "demo_seller_eu",
+        "display": "Mira",
+        "roles": [
+          "seller"
+        ]
+      },
+      "body": {
+        "item": {
+          "title": "Used mechanical keyboard",
+          "condition": "used",
+          "tags": [
+            "goods"
+          ]
+        },
+        "price": {
+          "amount": "80",
+          "currency": "EUR"
+        },
+        "where": {
+          "region": "Berlin-Mitte",
+          "geo": {
+            "lat": 52.52,
+            "lon": 13.405,
+            "radius_m": 4000
+          },
+          "privacy": "public"
+        },
+        "stock": 1,
+        "match": {
+          "mode": "one_to_many",
+          "vertical": "goods_unique",
+          "max_accepts": 1,
+          "exclusive": true
+        }
+      },
+      "sig": null
+    },
+    {
+      "v": 1,
+      "id": "fm19f97f1a574cd20401788",
+      "type": "bid",
+      "ts": "2026-07-25T06:23:43Z",
+      "from": {
+        "id": "demo_buyer_eu",
+        "display": "Sam",
+        "roles": [
+          "buyer"
+        ]
+      },
+      "body": {
+        "target_id": "fm19f97f1a572fac5dfd814",
+        "price": {
+          "amount": "70",
+          "currency": "EUR"
+        },
+        "message": "Can meet near Alexanderplatz",
+        "delivery": {
+          "mode": "meetup"
+        }
+      },
+      "sig": null,
+      "thread": "fm19f97f1a572fac5dfd814",
+      "reply_to": "fm19f97f1a572fac5dfd814"
+    },
+    {
+      "v": 1,
+      "id": "fm19f97f1a576bf432e7d48",
+      "type": "have",
+      "ts": "2026-07-25T06:23:43Z",
+      "from": {
+        "id": "demo_kitchen",
+        "display": "NoriBowl",
+        "roles": [
+          "seller"
+        ]
+      },
+      "body": {
+        "item": {
+          "title": "Vegetarian lunch bowl",
+          "tags": [
+            "food"
+          ]
+        },
+        "price": {
+          "amount": "9.5",
+          "currency": "EUR"
+        },
+        "where": {
+          "region": "Lisbon-Baixa",
+          "geo": {
+            "lat": 38.71,
+            "lon": -9.136
+          },
+          "privacy": "public"
+        },
+        "match": {
+          "mode": "one_to_many",
+          "vertical": "food_order",
+          "max_accepts": 1
+        },
+        "notes": "Ready in 20m · vegetarian"
+      },
+      "sig": null
+    },
+    {
+      "v": 1,
+      "id": "fm19f97f1a5781e46c420de",
+      "type": "deal",
+      "ts": "2026-07-25T06:23:43Z",
+      "from": {
+        "id": "demo_kitchen",
+        "display": "NoriBowl",
+        "roles": [
+          "seller"
+        ]
+      },
+      "body": {
+        "parties": {
+          "buyer": "demo_buyer_eu",
+          "seller": "demo_kitchen",
+          "courier": null
+        },
+        "item": {
+          "title": "Vegetarian lunch bowl"
+        },
+        "price": {
+          "amount": "9.5",
+          "currency": "EUR"
+        },
+        "delivery": {
+          "mode": "courier"
+        },
+        "based_on": [
+          "fm19f97f1a576bf432e7d48"
+        ],
+        "match": {
+          "mode": "one_to_one",
+          "vertical": "food_order"
+        }
+      },
+      "sig": null,
+      "thread": "fm19f97f1a576bf432e7d48"
+    },
+    {
+      "v": 1,
+      "id": "fm19f97f1a57b531e911636",
+      "type": "courier.offer",
+      "ts": "2026-07-25T06:23:43Z",
+      "from": {
+        "id": "demo_rider",
+        "display": "Kai",
+        "roles": [
+          "courier"
+        ]
+      },
+      "body": {
+        "target_id": "fm19f97f1a5781e46c420de",
+        "fee": {
+          "amount": "3.5",
+          "currency": "EUR"
+        },
+        "eta": "15m",
+        "match": {
+          "mode": "one_to_many",
+          "vertical": "food_order"
+        },
+        "where": {
+          "region": "Lisbon",
+          "geo": {
+            "lat": 38.712,
+            "lon": -9.14
+          },
+          "privacy": "public"
+        }
+      },
+      "sig": null
+    },
+    {
+      "v": 1,
+      "id": "fm19f97f1a57def6b3bcecf",
+      "type": "want",
+      "ts": "2026-07-25T06:23:43Z",
+      "from": {
+        "id": "demo_pax",
+        "display": "Alex",
+        "roles": [
+          "buyer"
+        ]
+      },
+      "body": {
+        "item": {
+          "title": "Ride Brooklyn → JFK",
+          "description": "2 bags · flexible 10min",
+          "tags": [
+            "ride"
+          ]
+        },
+        "budget": {
+          "amount": "55",
+          "currency": "USD"
+        },
+        "where": {
+          "region": "New York",
+          "label": "Brooklyn → JFK",
+          "geo": {
+            "lat": 40.6782,
+            "lon": -73.9442
+          },
+          "privacy": "public"
+        },
+        "need_courier": true,
+        "match": {
+          "mode": "one_to_many",
+          "vertical": "ride",
+          "max_accepts": 1,
+          "exclusive": true
+        }
+      },
+      "sig": null
+    },
+    {
+      "v": 1,
+      "id": "fm19f97f1a57f1e12578f01",
+      "type": "courier.offer",
+      "ts": "2026-07-25T06:23:43Z",
+      "from": {
+        "id": "demo_driver",
+        "display": "Riley",
+        "roles": [
+          "courier"
+        ]
+      },
+      "body": {
+        "target_id": "fm19f97f1a57def6b3bcecf",
+        "fee": {
+          "amount": "48",
+          "currency": "USD"
+        },
+        "eta": "6min",
+        "vehicle": "sedan",
+        "match": {
+          "mode": "one_to_many",
+          "vertical": "ride"
+        },
+        "where": {
+          "geo": {
+            "lat": 40.68,
+            "lon": -73.95
+          },
+          "privacy": "public"
+        }
+      },
+      "sig": null,
+      "thread": "fm19f97f1a57def6b3bcecf"
+    }
+  ],
+  "nearby_from_berlin_sample": {
+    "messages": [
+      {
+        "id": "fm19f97f1a572fac5dfd814",
+        "type": "have",
+        "from": "demo_seller_eu",
+        "display": "Mira",
+        "title": "Used mechanical keyboard",
+        "price": {
+          "amount": "80",
+          "currency": "EUR"
+        },
+        "region": "Berlin-Mitte",
+        "lat": 52.52,
+        "lon": 13.405,
+        "distance_m": 0.0,
+        "distance_text": "0 m",
+        "ts": "2026-07-25T06:23:43Z",
+        "thread": null,
+        "ttl_sec": null,
+        "match_mode": "one_to_many",
+        "vertical": "goods_unique",
+        "body": {
+          "match": {
+            "mode": "one_to_many",
+            "vertical": "goods_unique",
+            "max_accepts": 1,
+            "exclusive": true
+          },
+          "where": {
+            "region": "Berlin-Mitte",
+            "geo": {
+              "lat": 52.52,
+              "lon": 13.405,
+              "radius_m": 4000
+            },
+            "privacy": "public"
+          }
+        }
+      },
+      {
+        "id": "fm19f97f1a576bf432e7d48",
+        "type": "have",
+        "from": "demo_kitchen",
+        "display": "NoriBowl",
+        "title": "Vegetarian lunch bowl",
+        "price": {
+          "amount": "9.5",
+          "currency": "EUR"
+        },
+        "region": "Lisbon-Baixa",
+        "lat": 38.71,
+        "lon": -9.136,
+        "distance_m": 2312965.6,
+        "distance_text": "2313.0 km",
+        "ts": "2026-07-25T06:23:43Z",
+        "thread": null,
+        "ttl_sec": null,
+        "match_mode": "one_to_many",
+        "vertical": "food_order",
+        "body": {
+          "match": {
+            "mode": "one_to_many",
+            "vertical": "food_order",
+            "max_accepts": 1
+          },
+          "where": {
+            "region": "Lisbon-Baixa",
+            "geo": {
+              "lat": 38.71,
+              "lon": -9.136
+            },
+            "privacy": "public"
+          }
+        }
+      },
+      {
+        "id": "fm19f97f1a57b531e911636",
+        "type": "courier.offer",
+        "from": "demo_rider",
+        "display": "Kai",
+        "title": "",
+        "price": {
+          "amount": "3.5",
+          "currency": "EUR"
+        },
+        "region": "Lisbon",
+        "lat": 38.712,
+        "lon": -9.14,
+        "distance_m": 2313025.9,
+        "distance_text": "2313.0 km",
+        "ts": "2026-07-25T06:23:43Z",
+        "thread": null,
+        "ttl_sec": null,
+        "match_mode": "one_to_many",
+        "vertical": "food_order",
+        "body": {
+          "match": {
+            "mode": "one_to_many",
+            "vertical": "food_order"
+          },
+          "where": {
+            "region": "Lisbon",
+            "geo": {
+              "lat": 38.712,
+              "lon": -9.14
+            },
+            "privacy": "public"
+          }
+        }
+      }
+    ],
+    "count": 3,
+    "origin": {
+      "lat": 52.52,
+      "lon": 13.405
+    },
+    "radius_m": 5000000.0,
+    "sort": "distance"
+  }
+}

@@ -1,15 +1,12 @@
 {
   "name": "free-match",
-  "version": "0.1.0",
-  "description": "Kill platform rent: open peer-matching protocol + agent skill for buyers, sellers, couriers",
+  "version": "0.1.4",
+  "description": "Global public-interest peer-matching protocol + agent skill (no take-rate, no paid rank)",
   "license": "MIT",
   "repository": "https://github.com/leochena/kill3",
-  "bin": {
-    "free-match-board": "runtime/server.py",
-    "fm": "runtime/fm.py"
-  },
   "scripts": {
     "board": "python runtime/server.py --port 8787",
-    "smoke": "python runtime/smoke_e2e.py"
+    "smoke": "python runtime/smoke_e2e.py",
+    "assets": "python scripts/export_demo_assets.py"
   }
 }
