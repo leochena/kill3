@@ -63,6 +63,8 @@ fm --board $BOARD track <deal_id>
 4. If courier: `courier-offer`* → `courier-accept` → `fulfill` picked_up/delivered.  
 5. `confirm complete` + reviews for kitchen **and** courier separately.  
 
+**Auto-accept kitchen agent (example):** [examples/merchant-auto-accept-food.md](examples/merchant-auto-accept-food.md).
+
 Never merge meal price and courier fee into one unlabeled number.
 
 ### 3) Ride (`ride`) — choose among offers
