@@ -61,6 +61,7 @@ Bid/accept; deal; `track` status; confirm; review.
 Write **description + photos** (`references/merchant-media.md`).
 Post `have` with `attachments`; answer wants; deal; fulfill; review.
 Show merchant a buyer-facing preview before publish.
+**Payment:** free-match does not hold funds. After verifying real money for a **specific `deal_id`**, post `confirm` with `status: paid`. Multi-order shops: one deal per ticket — see `references/merchant-payment.md`.
 
 ### C. Courier / driver
 Scan needs; `courier.offer` with fee+ETA+geo; on accept, fulfill events; review.
@@ -101,6 +102,7 @@ Full playbooks: repo `docs/daily-use.md`.
 - `references/buyer-nl.md` — natural-language buyer search
 - `references/merchant-media.md` — photos & descriptions
 - `references/order-tracking.md` — status + reminders
+- `references/merchant-payment.md` — seller confirms funds per deal (multi-order)
 - `references/matching.md`
 - `references/roles.md`
 - `references/discovery.md`

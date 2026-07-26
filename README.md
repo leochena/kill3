@@ -44,6 +44,7 @@ Full story: [docs/origin.md](docs/origin.md).
 | **Merchant: text + photos** | `item.description` + `item.attachments[]`; UI upload → `/media/`; CLI `--image` / `--image-uri` · [docs/media-and-catalog.md](docs/media-and-catalog.md) |
 | **Buyer: NL filter** | `fm search --nl "vegan under 12 EUR within 2km" --near-lat …` · transparent rank · [docs/buyer-nl-filter.md](docs/buyer-nl-filter.md) |
 | **Order status + reminders** | `fm track <id>` / `GET /api/v1/track/{id}`; agent host schedules reminders · [docs/order-tracking.md](docs/order-tracking.md) |
+| **Seller got paid?** | Not a wallet — verify transfer/cash, then `fm confirm --deal <id> --status paid` per order · [docs/merchant-payment.md](docs/merchant-payment.md) |
 | **Distance / map** | Haversine + Leaflet; free OSM tiles (`FM_TILE_URL`); GPS/map pick · [docs/maps-free.md](docs/maps-free.md) |
 | **Scenarios** | goods, food±courier, ride (choose among offers), errand, service · [docs/match-modes.md](docs/match-modes.md) |
 | **Per-scenario build plan** | [docs/roadmaps/](docs/roadmaps/README.md) — Now / Next / Later / Done when |
