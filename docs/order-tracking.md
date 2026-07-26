@@ -56,6 +56,7 @@ Skill behavior:
 
 - **Buyer:** “Where is my food / keyboard / ride?” → thread + last fulfill + distance if courier geo updates (optional future).  
 - **Merchant:** “Unaccepted bids / kitchen queue” → list deals where `parties.seller = me` and status not complete.  
+- **Merchant payment:** verify money off-protocol, then `confirm status=paid` **per deal_id** (many concurrent tickets = many deals). See [merchant-payment.md](merchant-payment.md).  
 - **Courier:** active accepts + next fulfill action.
 
 ## Reference CLI
